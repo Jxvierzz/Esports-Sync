@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "914732775639",
+    "project_id": "esports-sync",
+    "storage_bucket": "esports-sync.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:914732775639:android:9a81ec511e46306d6e5892",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSnkwmT3aoKXARtpvLdRNSDrIZ_Jb0EbA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
