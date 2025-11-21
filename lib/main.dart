@@ -1729,6 +1729,44 @@ Widget build(BuildContext context) {
       ],
     );
   }
+  List<Noticia> noticiasManuales = [
+    Noticia(
+    titulo: "Delight 🇰🇷 will remain with Hanwha Life Esports.",
+    descripcion: "Delight 🇰🇷 will remain with Hanwha Life Esports 🇰🇷 for LCK 2026, as confirmed by the organization.",
+    url: "https://www.sheepesports.com/en/articles/lol-lck-delight-re-signs-with-hanwha-life-esports/en",
+    imagenUrl: "https://pbs.twimg.com/media/G6RVM7DWoAAl_4h?format=jpg&name=large", 
+    fuente: "Oficial",
+    fecha: "21 Noviembre, 2025",
+  ),
+  
+  Noticia(
+    titulo: "Dplus KIA 🇰🇷 has officially announced the signing of its new AD Carry, Smash 🇰🇷",
+    descripcion: "Dplus KIA 🇰🇷 has officially announced the signing of its new AD Carry, Smash 🇰🇷.",
+    url: "https://x.com/Sheep_Esports/status/1991810038793744836",
+    imagenUrl: "https://pbs.twimg.com/media/G6RT9FEXgAAl7aP?format=jpg&name=4096x4096", 
+    fuente: "OFFICIAL",
+    fecha: "21 Noviembre, 2025",
+  ),
+  Noticia(
+    titulo: "GUMAYUSI OUT OF T1",
+    descripcion: "Se esperan cambios importantes en campeones y jugabilidad.",
+    url: "https://x.com/T1LoL/status/1990389461771816974",
+    imagenUrl: "https://pbs.twimg.com/media/G59CCtVa0AAAgNI?format=jpg&name=large", 
+    fuente: "OFFICIAL",
+    fecha: "17 Noviembre, 2025",
+  ),
+  Noticia(
+    titulo: "KEZNIT serca de ENVY",
+    descripcion: "Reporte de @AkamaruVal,Keznit sera el duelista en lugar de Canezerra (menor de edad) y jugará con Eggsterr, Inspire y P0PPIN a falta de cerrar el quinto. Vuelve el Deus.",
+    url: "https://x.com/Lembo006/status/1988370535513027086",
+    imagenUrl: "https://pbs.twimg.com/media/G5haSxRWoAAfcUm?format=jpg&name=900x900", 
+    fuente: "RUMORS",
+    fecha: "11 Noviembre, 2025",
+  ),
+  
+  
+];
+
   
   Widget buildPaginaNoticias() {
     return Column(
@@ -1736,7 +1774,7 @@ Widget build(BuildContext context) {
         Padding(
           padding: const EdgeInsets.all(20.0),
           child: Text(
-            "NOTICIAS",
+            "Noticias y Rumores",
             style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
@@ -1745,147 +1783,78 @@ Widget build(BuildContext context) {
           ),
         ),
         Expanded(
-          child: FutureBuilder<List<Noticia>>(
-            future: noticias,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return Center(
+            child: ListView.builder(
+              padding: EdgeInsets.all(16),
+              itemCount: noticiasManuales.length,
+              itemBuilder: (context, index) {
+                final noticia = noticiasManuales[index];
+                return Card(
+                  margin: EdgeInsets.only(bottom: 16),
+                  clipBehavior: Clip.antiAlias,
+                  elevation: 3,
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.error_outline, size: 50, color: Colors.red),
-                      SizedBox(height: 16),
-                      Text("Error cargando noticias"),
-                      SizedBox(height: 8),
-                      Text(
-                        "${snapshot.error}",
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                );
-              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.newspaper, size: 50, color: Colors.grey),
-                      SizedBox(height: 16),
-                      Text("No hay noticias disponibles"),
-                    ],
-                  ),
-                );
-              }
-              final noticias = snapshot.data!;
-              return ListView.builder(
-                padding: EdgeInsets.all(16),
-                itemCount: noticias.length,
-                itemBuilder: (context, index) {
-                  final noticia = noticias[index];
-                  return GestureDetector(
-                    onTap: () {
-                      if (noticia.url.isNotEmpty) {
-                        abrirURL(noticia.url);
-                      }
-                    },
-                    child: Card(
-                      margin: EdgeInsets.only(bottom: 16),
-                      clipBehavior: Clip.antiAlias,
-                      elevation: 3,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          noticia.imagenUrl.isNotEmpty
-                              ? Image.network(
-                                  noticia.imagenUrl,
-                                  height: 200,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      height: 200,
-                                      color: Colors.grey[300],
-                                      child: Center(
-                                        child: Icon(Icons.newspaper,
-                                            size: 50, color: Colors.grey),
-                                      ),
-                                    );
-                                  },
-                                )
-                              : Container(
-                                  height: 200,
-                                  color: Colors.grey[300],
-                                  child: Center(
-                                    child: Icon(Icons.newspaper,
-                                        size: 50, color: Colors.grey),
-                                  ),
+                      // Si tienes imagen
+                      noticia.imagenUrl.isNotEmpty
+                          ? Image.network(noticia.imagenUrl,
+                              height: 200,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                height: 200,
+                                color: Colors.grey[300],
+                                child: Center(
+                                  child: Icon(Icons.newspaper, size: 50, color: Colors.grey),
                                 ),
-                          Padding(
-                            padding: EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                              ),
+                            )
+                          : Container(),
+                      Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
                               children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: Colors.teal,
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: Text(
-                                        noticia.fuente,
-                                        style: TextStyle(
+                                Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.teal,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(noticia.fuente,
+                                      style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        noticia.fecha,
-                                        style: TextStyle(
-                                            color: Colors.grey[600],
-                                            fontSize: 12),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    Icon(Icons.open_in_new,
-                                        size: 16, color: Colors.grey),
-                                  ],
+                                          fontWeight: FontWeight.bold)),
                                 ),
-                                SizedBox(height: 12),
-                                Text(
-                                  noticia.titulo,
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
+                                SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(noticia.fecha,
+                                      style: TextStyle(
+                                          color: Colors.grey[600],
+                                          fontSize: 12,
+                                          overflow: TextOverflow.ellipsis)),
                                 ),
-                                SizedBox(height: 8),
-                                Text(
-                                  noticia.descripcion,
-                                  style: TextStyle(
-                                      color: Colors.grey[700], fontSize: 14),
-                                  maxLines: 3,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                                Icon(Icons.open_in_new, size: 16, color: Colors.grey),
                               ],
                             ),
-                          ),
-                        ],
+                            SizedBox(height: 12),
+                            Text(noticia.titulo,
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis),
+                            SizedBox(height: 8),
+                            Text(noticia.descripcion,
+                                style: TextStyle(color: Colors.grey[700], fontSize: 14),
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis),
+                         ],
                       ),
                     ),
-                  );
-                },
+                  ],
+                ),
               );
             },
           ),
