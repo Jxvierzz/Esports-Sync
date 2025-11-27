@@ -156,7 +156,35 @@ const Map<String, String> banderaUrls = {
   'flag_mx': 'https://flagcdn.com/w40/mx.png',
 };
 
-// ========== CLASE PARTIDO ==========
+
+   // ========== CSGO ==========
+     
+     
+      class CsgoMajorInfo {
+        final String mainTitle;
+        final String subtitle;
+        final String special;
+
+        CsgoMajorInfo({required this.mainTitle, required this.subtitle, required this.special});
+      }
+
+
+      Future<CsgoMajorInfo> fetchCsgoMajorInfo() async {
+        final response = await http.get(Uri.parse('https://hltv-api.vercel.app/api/event/major'));
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          return CsgoMajorInfo(
+            mainTitle: "¡El Camino a la Major está en marcha!",
+            subtitle: "Próxima parada: ${data['next_stage'] ?? 'Desconocido'}",
+            special: "${data['top_team'] ?? 'Equipo destacado'} clasificado",
+          );
+        } else {
+          throw Exception('No se pudo cargar info de la Major');
+        }
+      }
+
+
+// ========== LOL ==========
 class Partido {
   final String hora;
   final String equipo1;
@@ -191,7 +219,7 @@ class Noticia {
   final String imagenUrl;
   final String fuente;
   final String fecha;
-
+  final String juego;
   Noticia({
     required this.titulo,
     required this.descripcion,
@@ -199,6 +227,7 @@ class Noticia {
     required this.imagenUrl,
     required this.fuente,
     required this.fecha,
+    required this.juego,
   });
 }
 
@@ -864,6 +893,11 @@ Widget build(BuildContext context) {
     
   );
 }
+ //--------------CSGO--------------------------
+
+
+  late Future<CsgoMajorInfo> infoMajorCsgo;
+
 
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   Map<String, String> logosEquipos = {};
@@ -893,7 +927,7 @@ void cargarLogosEquipos() async {
   void initState() {
     super.initState();
     cargarLogosEquipos();
-    
+    infoMajorCsgo = fetchCsgoMajorInfo();
     partidosLoL = obtenerPartidosLoL();
     partidosValorant = obtenerPartidosValorant();
     partidosFortnite = obtenerPartidosFortnite();
@@ -1085,8 +1119,46 @@ void cargarLogosEquipos() async {
     card3Controller.dispose();
     super.dispose();
   }
+  
+  Widget csgoMajorCard(CsgoMajorInfo info) {
+  return Container(
+    decoration: BoxDecoration(
+      color: Colors.black,
+      borderRadius: BorderRadius.circular(24),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.red.withOpacity(0.7),
+          blurRadius: 20,
+          spreadRadius: 3,
+        ),
+      ],
+    ),
+    padding: const EdgeInsets.all(18.0),
+    margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Image.asset('assets/icons/csgo.png', height: 40), // Cambia la ruta a tu logo CS:GO
+            SizedBox(width: 16),
+            Text('CS:GO', style: TextStyle(fontSize: 28, color: Colors.amber, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        SizedBox(height: 8),
+        Text(info.mainTitle, style: TextStyle(color: Colors.redAccent, fontSize: 20)),
+        SizedBox(height: 8),
+        Text(info.subtitle, style: TextStyle(color: Colors.white70, fontSize: 16)),
+        SizedBox(height: 8),
+        Text(info.special, style: TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.w500)),
+      ],
+    ),
+  );
+}
+
 
 Widget buildApuestas1xbetTab(BuildContext context) {
+  
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1319,6 +1391,7 @@ Widget buildApuestas1xbetTab(BuildContext context) {
             fecha: articulo['publishedAt'] != null
                 ? formatearFecha(articulo['publishedAt'])
                 : "Fecha desconocida",
+            juego: articulo['source']?['name'] ?? "Desconocido",
           ));
         }
 
@@ -1581,7 +1654,9 @@ Widget build(BuildContext context) {
 
 
   Widget buildPaginaInicio() {
+    
     return Column(
+      
       children: [
         Padding(
           padding: const EdgeInsets.all(20.0),
@@ -1600,16 +1675,40 @@ Widget build(BuildContext context) {
           cardColor: const Color.fromARGB(255, 0, 0, 0),
           borderWidth: 3.0, // Reemplaza la URL correcta del logo
             ),
-
+            //-----------------------------------CSGO------------------------------------------
+            Expanded(
+              child: AspectRatio(
+                aspectRatio: 2.0,
+                child: FutureBuilder<CsgoMajorInfo>(
+                  future: infoMajorCsgo,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    } else if (snapshot.hasError) {
+                      return Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Text('Error cargando CS:GO Major', style: TextStyle(color: Colors.red)),
+                      );
+                    } else if (snapshot.hasData) {
+                      return csgoMajorCard(snapshot.data!);
+                    } else {
+                      return Container();
+                    }
+                  },
+                ),
+              ),
+            ),
         Expanded(
-  child: Padding(
-    padding: const EdgeInsets.all(16.0),
-    child: LayoutBuilder(
-      builder: (context, constraints) {
+        child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: LayoutBuilder(
+        builder: (context, constraints) {
         if (constraints.maxWidth > 600) {
           // Cards rectangulares en pantallas anchas
           return Row(
-            
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Expanded(
@@ -1630,6 +1729,9 @@ Widget build(BuildContext context) {
                   ),
                 ),
               ),
+              
+              
+            //-------------------------VALORANT--------------------------------------------------
               SizedBox(width: 16),
               Expanded(
                 child: AspectRatio(
@@ -1649,6 +1751,7 @@ Widget build(BuildContext context) {
                   ),
                 ),
               ),
+              //--------------------------------------------FORTNITE--------------------------------
               SizedBox(width: 16),
               Expanded(
                 child: AspectRatio(
@@ -1670,6 +1773,7 @@ Widget build(BuildContext context) {
               ),
             ],
           );
+          
         } else {
           // TARJETAS PARA LOS TELEFONOS
           return GridView.count(
@@ -1728,8 +1832,29 @@ Widget build(BuildContext context) {
         ),
       ],
     );
+    
   }
   List<Noticia> noticiasManuales = [
+
+    Noticia(
+    titulo: "RAZORK will be Fnatic .",
+    descripcion: "Jungler Razork 🇪🇸 will be Fnatic 🇬🇧's starting jungler in the 2026 #LEC season",
+    url: "https://x.com/Sheep_Esports/status/1993813247926128706",
+    imagenUrl: "https://pbs.twimg.com/card_img/1993813249469587456/pfol0MbF?format=jpg&name=small",
+    fuente: "Oficial",
+    fecha: "26 Noviembre, 2025",
+    juego: "LE"
+  ),
+
+    Noticia(
+    titulo: "Toplaner Shelfmade 🇩🇪 and Jungler Markoon 🇳🇱 are set to join G2 NORD 🇩🇪",
+    descripcion: "",
+    url: "https://www.sheepesports.com/en/articles/sources-shelfmade-and-markoon-set-to-join-g2-academy/en",
+    imagenUrl: "https://pbs.twimg.com/card_img/1993823034470260736/HASL90-O?format=jpg&name=small", 
+    fuente: "Oficial",
+    fecha: "26 Noviembre, 2025",
+    juego: "11 Noviembre, 2025",
+  ),
     Noticia(
     titulo: "Delight 🇰🇷 will remain with Hanwha Life Esports.",
     descripcion: "Delight 🇰🇷 will remain with Hanwha Life Esports 🇰🇷 for LCK 2026, as confirmed by the organization.",
@@ -1737,6 +1862,7 @@ Widget build(BuildContext context) {
     imagenUrl: "https://pbs.twimg.com/media/G6RVM7DWoAAl_4h?format=jpg&name=large", 
     fuente: "Oficial",
     fecha: "21 Noviembre, 2025",
+    juego: "11 Noviembre, 2025",
   ),
   
   Noticia(
@@ -1746,6 +1872,7 @@ Widget build(BuildContext context) {
     imagenUrl: "https://pbs.twimg.com/media/G6RT9FEXgAAl7aP?format=jpg&name=4096x4096", 
     fuente: "OFFICIAL",
     fecha: "21 Noviembre, 2025",
+    juego: "11 Noviembre, 2025",
   ),
   Noticia(
     titulo: "GUMAYUSI OUT OF T1",
@@ -1754,14 +1881,16 @@ Widget build(BuildContext context) {
     imagenUrl: "https://pbs.twimg.com/media/G59CCtVa0AAAgNI?format=jpg&name=large", 
     fuente: "OFFICIAL",
     fecha: "17 Noviembre, 2025",
+   juego: "11 Noviembre, 2025",
   ),
   Noticia(
-    titulo: "KEZNIT serca de ENVY",
+    titulo: "KEZNIT cerca de ENVY",
     descripcion: "Reporte de @AkamaruVal,Keznit sera el duelista en lugar de Canezerra (menor de edad) y jugará con Eggsterr, Inspire y P0PPIN a falta de cerrar el quinto. Vuelve el Deus.",
     url: "https://x.com/Lembo006/status/1988370535513027086",
     imagenUrl: "https://pbs.twimg.com/media/G5haSxRWoAAfcUm?format=jpg&name=900x900", 
     fuente: "RUMORS",
     fecha: "11 Noviembre, 2025",
+    juego: "11 Noviembre, 2025",
   ),
   
   
