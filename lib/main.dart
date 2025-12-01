@@ -129,7 +129,7 @@ class BettingPage extends StatelessWidget {
 
  
 
-const String NEWS_API_KEY = '8ece716a47e04f05a67354b5510bf72d';
+//const String NEWS_API_KEY = '8ece716a47e04f05a67354b5510bf72d';
 
 // ========== MAPA DE BANDERAS ==========
 const Map<String, String> banderaUrls = {
@@ -169,19 +169,7 @@ const Map<String, String> banderaUrls = {
       }
 
 
-      Future<CsgoMajorInfo> fetchCsgoMajorInfo() async {
-        final response = await http.get(Uri.parse('https://hltv-api.vercel.app/api/event/major'));
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          return CsgoMajorInfo(
-            mainTitle: "¡El Camino a la Major está en marcha!",
-            subtitle: "Próxima parada: ${data['next_stage'] ?? 'Desconocido'}",
-            special: "${data['top_team'] ?? 'Equipo destacado'} clasificado",
-          );
-        } else {
-          throw Exception('No se pudo cargar info de la Major');
-        }
-      }
+
 
 
 // ========== LOL ==========
@@ -391,6 +379,41 @@ class EquipoConLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Widget csgoMajorCard(CsgoMajorInfo info) {
+  return Container(
+    decoration: BoxDecoration(
+      color: Colors.black,
+      borderRadius: BorderRadius.circular(24),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.red.withOpacity(0.7),
+          blurRadius: 20,
+          spreadRadius: 3,
+        ),
+      ],
+    ),
+    padding: const EdgeInsets.all(18.0),
+    margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Image.asset('assets/icons/csgo.png', height: 40), // Cambia la ruta a tu logo CS:GO
+            SizedBox(width: 16),
+            Text('CS:GO', style: TextStyle(fontSize: 28, color: Colors.amber, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        SizedBox(height: 8),
+        Text(info.mainTitle, style: TextStyle(color: Colors.redAccent, fontSize: 20)),
+        SizedBox(height: 8),
+        Text(info.subtitle, style: TextStyle(color: Colors.white70, fontSize: 16)),
+        SizedBox(height: 8),
+        Text(info.special, style: TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.w500)),
+      ],
+    ),
+  );
+}
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -466,6 +489,7 @@ class _DialogoPartidosState extends State<DialogoPartidos>
     super.initState();
     filtroLiga = widget.filtroInicial;
     partidosFiltrados = widget.partidosAPI;
+    infoMajorCsgo = fetchCsgoMajorInfo(); 
     pulseController = AnimationController(
       duration: Duration(milliseconds: 1000),
       vsync: this,
@@ -533,6 +557,16 @@ class _DialogoPartidosState extends State<DialogoPartidos>
 
   @override
 Widget build(BuildContext context) {
+    Future<CsgoMajorInfo> fetchCsgoMajorInfo() async {
+  await Future.delayed(const Duration(seconds: 1));
+  return CsgoMajorInfo(
+    mainTitle: 'Camino a la Major',
+    subtitle: 'Próxima parada: CS:GO Major',
+    special: 'Equipo destacado: TBA',
+  );
+}
+
+
   return FutureBuilder<List<Partido>>(
     future: partidosFiltrados,
     builder: (context, snapshot) {
@@ -703,6 +737,7 @@ Widget build(BuildContext context) {
                         ],
                       ),
                       const SizedBox(height: 8),
+                      
                       
                       // ========== SECCIÓN CON RESULTADOS (MODIFICADA) ==========
                       if (p.equipo1.isNotEmpty && p.equipo2.isNotEmpty)
@@ -897,9 +932,89 @@ Widget build(BuildContext context) {
 
 
   late Future<CsgoMajorInfo> infoMajorCsgo;
+  Future<CsgoMajorInfo> fetchCsgoMajorInfo() async {
+  await Future.delayed(const Duration(seconds: 1));
+  return CsgoMajorInfo(
+    mainTitle: 'Camino a la Major',
+    subtitle: 'Próxima parada: CS:GO Major',
+    special: 'Equipo destacado: TBA',
+  );
+}
 
-
+//-----------------------------------------------
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
+
+       Widget csgoMajorCard(CsgoMajorInfo info, VoidCallback onTap) {
+  return Material(
+    color: Colors.transparent,
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      splashColor: Colors.white.withOpacity(0.5),
+      highlightColor: Colors.white.withOpacity(0.2),
+      child: Ink(
+        decoration: BoxDecoration(
+          color: Colors.black, // color base por si no carga la imagen
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+          image: const DecorationImage(
+            image: AssetImage("assets/icons/fondocsgo2.jpg"), 
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(
+              Colors.black54, 
+              BlendMode.darken,
+            ),
+          ),
+        ),
+        child: Center(
+          child: Text(
+            "CS:GO", 
+            style: GoogleFonts.bebasNeue(
+              color: Colors.white,
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 3,
+              shadows: [
+                Shadow(
+                  color: Colors.black.withOpacity(0.8),
+                  offset: const Offset(2, 2),
+                  blurRadius: 4,
+                ),
+              ],
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+
+void mostrarDialogoCsgo(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: const Text('Partidos CS:GO (demo)'),
+      content: const Text('Aquí luego mostraremos los partidos de la Major.'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cerrar'),
+        ),
+      ],
+    ),
+  );
+}
+
+
+
   Map<String, String> logosEquipos = {};
   Future<Map<String, String>> obtenerLogosValorant() async {
   final response = await http.get(Uri.parse("http://192.168.31.35:5000/api/v1/teams"));
@@ -945,7 +1060,7 @@ void cargarLogosEquipos() async {
       duration: Duration(milliseconds: 700),
       vsync: this,
     );
-
+  
     card1Animation = Tween<Offset>(
       begin: Offset(-1.5, 0.0),
       end: Offset.zero,
@@ -1120,41 +1235,7 @@ void cargarLogosEquipos() async {
     super.dispose();
   }
   
-  Widget csgoMajorCard(CsgoMajorInfo info) {
-  return Container(
-    decoration: BoxDecoration(
-      color: Colors.black,
-      borderRadius: BorderRadius.circular(24),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.red.withOpacity(0.7),
-          blurRadius: 20,
-          spreadRadius: 3,
-        ),
-      ],
-    ),
-    padding: const EdgeInsets.all(18.0),
-    margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Image.asset('assets/icons/csgo.png', height: 40), // Cambia la ruta a tu logo CS:GO
-            SizedBox(width: 16),
-            Text('CS:GO', style: TextStyle(fontSize: 28, color: Colors.amber, fontWeight: FontWeight.bold)),
-          ],
-        ),
-        SizedBox(height: 8),
-        Text(info.mainTitle, style: TextStyle(color: Colors.redAccent, fontSize: 20)),
-        SizedBox(height: 8),
-        Text(info.subtitle, style: TextStyle(color: Colors.white70, fontSize: 16)),
-        SizedBox(height: 8),
-        Text(info.special, style: TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.w500)),
-      ],
-    ),
-  );
-}
+  
 
 
 Widget buildApuestas1xbetTab(BuildContext context) {
@@ -1205,6 +1286,7 @@ Widget buildApuestas1xbetTab(BuildContext context) {
                         ),
                       ],
                     ),
+                    
                     child: Card(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
                       elevation: 5,
@@ -1241,6 +1323,7 @@ Widget buildApuestas1xbetTab(BuildContext context) {
                         onTap: () => _launchURL(context, match['bettingUrl']!),
                       ),
                     ),
+                    
                   );
                 },
               );
@@ -1654,9 +1737,8 @@ Widget build(BuildContext context) {
 
 
   Widget buildPaginaInicio() {
-    
-    return Column(
-      
+  return SingleChildScrollView( // 1) ahora toda la página puede hacer scroll
+    child: Column(
       children: [
         Padding(
           padding: const EdgeInsets.all(20.0),
@@ -1669,171 +1751,232 @@ Widget build(BuildContext context) {
             ),
           ),
         ),
+
+        // Card de T1
         CampeonCard(
           campeonNombre: 'T1',
-          campeonLogoUrl: 'http://static.lolesports.com/teams/1726801573959_539px-T1_2019_full_allmode.png',
+          campeonLogoUrl:
+              'http://static.lolesports.com/teams/1726801573959_539px-T1_2019_full_allmode.png',
           cardColor: const Color.fromARGB(255, 0, 0, 0),
-          borderWidth: 3.0, // Reemplaza la URL correcta del logo
-            ),
-            //-----------------------------------CSGO------------------------------------------
-            Expanded(
-              child: AspectRatio(
-                aspectRatio: 2.0,
-                child: FutureBuilder<CsgoMajorInfo>(
-                  future: infoMajorCsgo,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Center(child: CircularProgressIndicator()),
-                      );
-                    } else if (snapshot.hasError) {
-                      return Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Text('Error cargando CS:GO Major', style: TextStyle(color: Colors.red)),
-                      );
-                    } else if (snapshot.hasData) {
-                      return csgoMajorCard(snapshot.data!);
-                    } else {
-                      return Container();
-                    }
-                  },
-                ),
-              ),
-            ),
-        Expanded(
-        child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: LayoutBuilder(
-        builder: (context, constraints) {
-        if (constraints.maxWidth > 600) {
-          // Cards rectangulares en pantallas anchas
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                child: AspectRatio(
-                  aspectRatio: 2.0, // Rectángulo ancho
-                  child: SlideTransition(
-                    position: card1Animation,
-                    child: FadeTransition(
-                      opacity: card1FadeAnimation,
-                      child: _buildGameCard(
-                        context,
-                        color: Colors.cyan,
-                        title: "LOL ESPORTS",
-                        imageAsset: "assets/icons/fondolol.jpg",
-                        onTap: () => mostrarDialogoLoL(context),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              
-              
-            //-------------------------VALORANT--------------------------------------------------
-              SizedBox(width: 16),
-              Expanded(
-                child: AspectRatio(
-                  aspectRatio: 2.0,
-                  child: SlideTransition(
-                    position: card2Animation,
-                    child: FadeTransition(
-                      opacity: card2FadeAnimation,
-                      child: _buildGameCard(
-                        context,
-                        color: Color(0xFFFF4655),
-                        title: "VALORANT",
-                        imageAsset: "assets/icons/fondovct.jpg",
-                        onTap: () => mostrarDialogoValorant(context),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              //--------------------------------------------FORTNITE--------------------------------
-              SizedBox(width: 16),
-              Expanded(
-                child: AspectRatio(
-                  aspectRatio: 2.0,
-                  child: SlideTransition(
-                    position: card3Animation,
-                    child: FadeTransition(
-                      opacity: card3FadeAnimation,
-                      child: _buildGameCard(
-                        context,
-                        color: Color(0xFF8B5CF6),
-                        title: "FORTNITE",
-                        imageAsset: "assets/icons/fondofncs.jpg",
-                        onTap: () => mostrarDialogoFortnite(context),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-          
-        } else {
-          // TARJETAS PARA LOS TELEFONOS
-          return GridView.count(
-              crossAxisCount: 1, // Sólo una card por fila, así crecen horizontalmente
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 2.3, // Proporción cuadrada
-            children: [
-              SlideTransition(
-                position: card1Animation,
-                child: FadeTransition(
-                  opacity: card1FadeAnimation,
-                  child: _buildGameCard(
-                    context,
-                    color: Colors.cyan,
-                    title: "LOL ESPORTS",
-                    imageAsset: "assets/icons/fondolol.jpg",
-                    onTap: () => mostrarDialogoLoL(context),
-                  ),
-                ),
-              ),
-              
-            
-              SlideTransition(
-                position: card2Animation,
-                child: FadeTransition(
-                  opacity: card2FadeAnimation,
-                  child: _buildGameCard(
-                    context,
-                    color: Color(0xFFFF4655),
-                    title: "VALORANT",
-                    imageAsset: "assets/icons/fondovct.jpg",
-                    onTap: () => mostrarDialogoValorant(context),
-                  ),
-                ),
-              ),
-              SlideTransition(
-                position: card3Animation,
-                child: FadeTransition(
-                  opacity: card3FadeAnimation,
-                  child: _buildGameCard(
-                    context,
-                    color: Color(0xFF8B5CF6),
-                    title: "FORTNITE",
-                    imageAsset: "assets/icons/fondofncs.jpg",
-                    onTap: () => mostrarDialogoFortnite(context),
+          borderWidth: 3.0,
+        ),
+
+        // ---- CONTENEDOR DE CARDS (LOL / VAL / CSGO / FN) ----
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              if (constraints.maxWidth > 600) {
+                // ---------------- DESKTOP / TABLET: ROW ----------------
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // LOL
+                    Expanded(
+                      child: AspectRatio(
+                        aspectRatio: 2.0,
+                        child: SlideTransition(
+                          position: card1Animation,
+                          child: FadeTransition(
+                            opacity: card1FadeAnimation,
+                            child: _buildGameCard(
+                              context,
+                              color: Colors.cyan,
+                              title: "LOL ESPORTS",
+                              imageAsset: "assets/icons/fondolol.jpg",
+                              onTap: () => mostrarDialogoLoL(context),
+                            ),
                           ),
                         ),
                       ),
-                    ],
-                  );
-                }
-              },
-            ),
+                    ),
+
+                    const SizedBox(width: 16),
+
+                    // VALORANT
+                    Expanded(
+                      child: AspectRatio(
+                        aspectRatio: 2.0,
+                        child: SlideTransition(
+                          position: card2Animation,
+                          child: FadeTransition(
+                            opacity: card2FadeAnimation,
+                            child: _buildGameCard(
+                              context,
+                              color: const Color(0xFFFF4655),
+                              title: "VALORANT",
+                              imageAsset: "assets/icons/fondovct.jpg",
+                              onTap: () => mostrarDialogoValorant(context),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(width: 16),
+
+                    // CSGO (USA FUTUREBUILDER)
+                    Expanded(
+                      child: AspectRatio(
+                        aspectRatio: 2.0,
+                        child: FutureBuilder<CsgoMajorInfo>(
+                          future: infoMajorCsgo,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                  child: CircularProgressIndicator());
+                            } else if (snapshot.hasError ||
+                                !snapshot.hasData) {
+                              return const Card(
+                                color: Colors.black,
+                                child: Center(
+                                  child: Text(
+                                    'Error cargando CS:GO',
+                                    style: TextStyle(color: Colors.red),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              );
+                            }
+
+                            final info = snapshot.data!;
+
+                            return Center(
+                              child: SizedBox(
+                                height: 160,
+                                child: csgoMajorCard(
+                                  info,
+                                  () => mostrarDialogoCsgo(context),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(width: 16),
+
+                    // FORTNITE
+                    Expanded(
+                      child: AspectRatio(
+                        aspectRatio: 2.0,
+                        child: SlideTransition(
+                          position: card3Animation,
+                          child: FadeTransition(
+                            opacity: card3FadeAnimation,
+                            child: _buildGameCard(
+                              context,
+                              color: const Color(0xFF8B5CF6),
+                              title: "FORTNITE",
+                              imageAsset: "assets/icons/fondofncs.jpg",
+                              onTap: () => mostrarDialogoFortnite(context),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              } else {
+                // ---------------- MÓVIL: GRIDVIEW EN UNA COLUMNA ----------------
+                return GridView.count(
+                  crossAxisCount: 1,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 2.3,
+                  shrinkWrap: true, // 2) Para que tome solo el alto necesario
+                  physics:
+                      const NeverScrollableScrollPhysics(), // 3) El scroll lo maneja el SingleChildScrollView
+                  children: [
+                    // LOL
+                    SlideTransition(
+                      position: card1Animation,
+                      child: FadeTransition(
+                        opacity: card1FadeAnimation,
+                        child: _buildGameCard(
+                          context,
+                          color: Colors.cyan,
+                          title: "LOL ESPORTS",
+                          imageAsset: "assets/icons/fondolol.jpg",
+                          onTap: () => mostrarDialogoLoL(context),
+                        ),
+                      ),
+                    ),
+
+                    // VALORANT
+                    SlideTransition(
+                      position: card2Animation,
+                      child: FadeTransition(
+                        opacity: card2FadeAnimation,
+                        child: _buildGameCard(
+                          context,
+                          color: const Color(0xFFFF4655),
+                          title: "VALORANT",
+                          imageAsset: "assets/icons/fondovct.jpg",
+                          onTap: () => mostrarDialogoValorant(context),
+                        ),
+                      ),
+                    ),
+
+                    // FORTNITE
+                    SlideTransition(
+                      position: card3Animation,
+                      child: FadeTransition(
+                        opacity: card3FadeAnimation,
+                        child: _buildGameCard(
+                          context,
+                          color: const Color(0xFF8B5CF6),
+                          title: "FORTNITE",
+                          imageAsset: "assets/icons/fondofncs.jpg",
+                          onTap: () => mostrarDialogoFortnite(context),
+                        ),
+                      ),
+                    ),
+
+                    // CSGO EN MÓVIL
+                    FutureBuilder<CsgoMajorInfo>(
+                      future: infoMajorCsgo,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        } else if (snapshot.hasError || !snapshot.hasData) {
+                          return const Card(
+                            color: Colors.black,
+                            child: Center(
+                              child: Text(
+                                'Error cargando CS:GO',
+                                style: TextStyle(color: Colors.red),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          );
+                        }
+
+                        final info = snapshot.data!;
+
+                        return SizedBox(
+                          height: 160,
+                          child: csgoMajorCard(
+                            info,
+                            () => mostrarDialogoCsgo(context),
+                           ),
+                        );
+                      },
+                    ),
+                  ],
+                );
+              }
+            },
           ),
         ),
       ],
-    );
-    
-  }
+    ),
+  );
+}
   List<Noticia> noticiasManuales = [
 
     Noticia(
