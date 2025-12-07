@@ -22,13 +22,13 @@ import 'screens/signup_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // Aquí muy temprano
+  await Firebase.initializeApp(); // AquÃ­ muy temprano
   runApp(const MyApp());
 }
 class BettingPage extends StatelessWidget { 
 
 
-  // Ejemplo con datos reales y links directos de eventos actuales (estos links llevan a la sección esports de 1xBet, reemplaza con links específicos para cada partido si lo deseas)
+  // Ejemplo con datos reales y links directos de eventos actuales (estos links llevan a la secciÃ³n esports de 1xBet, reemplaza con links especÃ­ficos para cada partido si lo deseas)
   final List<Map<String, String>> matches = [
   {
     "teams": "Natus Vincere vs FaZe Clan",
@@ -44,7 +44,7 @@ class BettingPage extends StatelessWidget {
     'logoB': 'assets/images/g2.png',
     'bettingUrl': 'https://1xbet.com/esports/match/3981620-team-liquid-vs-g2-esports-csgo-blast-fall-2025',
   },
-  // Repite para los demás...
+  // Repite para los demÃ¡s...
 ];
 
   void _launchURL(BuildContext context, String url) async {
@@ -342,7 +342,7 @@ class _CampeonCardState extends State<CampeonCard> with SingleTickerProviderStat
                         Text(
                           widget.campeonNombre,
                           style: TextStyle(
-                            color: Colors.white,
+                            color: const Color.fromARGB(255, 255, 0, 0),
                             fontSize: 25,
                             fontWeight: FontWeight.bold,
                             shadows: [
@@ -459,7 +459,7 @@ class EquipoConLogo extends StatelessWidget {
 }
 
 
-// ========== WIDGET DIÁLOGO PARTIDOS ==========
+// ========== WIDGET DIÃLOGO PARTIDOS ==========
 class DialogoPartidos extends StatefulWidget {
   final Future<List<Partido>> partidosAPI;
   final List<String> opcionesLiga;
@@ -489,7 +489,7 @@ class _DialogoPartidosState extends State<DialogoPartidos>
     super.initState();
     filtroLiga = widget.filtroInicial;
     partidosFiltrados = widget.partidosAPI;
-    infoMajorCsgo = fetchCsgoMajorInfo(); 
+    //infoMajorCsgo = fetchCsgoMajorInfo(); 
     pulseController = AnimationController(
       duration: Duration(milliseconds: 1000),
       vsync: this,
@@ -561,7 +561,7 @@ Widget build(BuildContext context) {
   await Future.delayed(const Duration(seconds: 1));
   return CsgoMajorInfo(
     mainTitle: 'Camino a la Major',
-    subtitle: 'Próxima parada: CS:GO Major',
+    subtitle: 'PrÃ³xima parada: CS:GO Major',
     special: 'Equipo destacado: TBA',
   );
 }
@@ -574,16 +574,26 @@ Widget build(BuildContext context) {
         return AlertDialog(
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(widget.titulo),
-              IconButton(
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.titulo,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,        // <-- antes seguro era negro/por defecto
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                IconButton(
                 icon: Icon(Icons.close),
                 onPressed: () => Navigator.pop(context),
                 padding: EdgeInsets.zero,
                 constraints: BoxConstraints(),
                 tooltip: "Cerrar",
               ),
-            ],
+              ],
           ),
           content: Center(child: CircularProgressIndicator()),
         );
@@ -608,16 +618,26 @@ Widget build(BuildContext context) {
         return AlertDialog(
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(widget.titulo),
-              IconButton(
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.titulo,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,        // <-- antes seguro era negro/por defecto
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                IconButton(
                 icon: Icon(Icons.close),
                 onPressed: () => Navigator.pop(context),
                 padding: EdgeInsets.zero,
                 constraints: BoxConstraints(),
                 tooltip: "Cerrar",
               ),
-            ],
+              ],
           ),
           content: Text("No hay eventos disponibles"),
         );
@@ -631,14 +651,19 @@ Widget build(BuildContext context) {
 
       return AlertDialog(
         title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Text(
-                widget.titulo,
-                overflow: TextOverflow.ellipsis,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  widget.titulo,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,        
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-            ),
             IconButton(
               icon: Icon(Icons.close),
               onPressed: () => Navigator.pop(context),
@@ -654,7 +679,7 @@ Widget build(BuildContext context) {
                 items: widget.opcionesLiga
                     .map((opcion) => DropdownMenuItem(
                           value: opcion,
-                          child: Text(opcion, style: TextStyle(fontSize: 14)),
+                          child: Text(opcion, style: TextStyle(fontSize: 14,color: Colors.white70)),
                         ))
                     .toList(),
                 onChanged: (nuevoValor) {
@@ -666,7 +691,7 @@ Widget build(BuildContext context) {
             ],
           ],
         ),
-        content: Container(
+         content: Container(
           width: double.maxFinite,
           child: ListView.builder(
             
@@ -739,7 +764,7 @@ Widget build(BuildContext context) {
                       const SizedBox(height: 8),
                       
                       
-                      // ========== SECCIÓN CON RESULTADOS (MODIFICADA) ==========
+                      // ========== SECCIÃ“N CON RESULTADOS (MODIFICADA) ==========
                       if (p.equipo1.isNotEmpty && p.equipo2.isNotEmpty)
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -851,7 +876,7 @@ Widget build(BuildContext context) {
                             ),
                           ],
                         ),
-                      // ========== FIN SECCIÓN CON RESULTADOS ==========
+                      // ========== FIN SECCIÃ“N CON RESULTADOS ==========
                       
                       const SizedBox(height: 6),
                       Text(p.torneo,
@@ -881,9 +906,13 @@ class MyApp extends StatelessWidget {
       title: 'Esports Sync',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        textTheme: GoogleFonts.bebasNeueTextTheme(),
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2D3538)),
-      ),
+      useMaterial3: true,
+      colorScheme: ColorScheme.fromSeed(
+      seedColor: const Color(0xFF00D9FF),
+      brightness: Brightness.dark,
+    ),
+    textTheme: GoogleFonts.bebasNeueTextTheme(),
+    ),
       routes: {
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignUpScreen(),
@@ -896,6 +925,7 @@ class MyApp extends StatelessWidget {
       return const Scaffold(
         backgroundColor: Color(0xFF1a1a2e),
         body: Center(child: CircularProgressIndicator(color: Color(0xFF00d9ff))),
+        
       );
     }
     if (snapshot.hasData) {
@@ -910,7 +940,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// ========== PÁGINA PRINCIPAL (TU APP COMPLETA) ==========
+// ========== PÃGINA PRINCIPAL (TU APP COMPLETA) ==========
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
   
@@ -920,19 +950,25 @@ class MyHomePage extends StatefulWidget {
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(title: const Text('LoL Esports News')),
-    body: const TwitterFeed(),
-    
-  );
-}
+
  //--------------CSGO--------------------------
 
 
-  late Future<CsgoMajorInfo> infoMajorCsgo;
-  Future<CsgoMajorInfo> fetchCsgoMajorInfo() async {
+
+//-----------------------------------------------
+class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
+  
+  
+  // ==== VARIABLES DE ESTADO AQUÃ ====
+  final PageController pageController = PageController();
+  int currentPage = 0;
+
+  int _selectedIndex = 0;
+ 
+ 
+  //--------------CSGO--------------------------
+late Future<CsgoMajorInfo> infoMajorCsgo;
+Future<CsgoMajorInfo> fetchCsgoMajorInfo() async {
   await Future.delayed(const Duration(seconds: 1));
   return CsgoMajorInfo(
     mainTitle: 'Camino a la Major',
@@ -940,11 +976,9 @@ Widget build(BuildContext context) {
     special: 'Equipo destacado: TBA',
   );
 }
+  
 
-//-----------------------------------------------
-class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
-
-       Widget csgoMajorCard(CsgoMajorInfo info, VoidCallback onTap) {
+  Widget csgoMajorCard(CsgoMajorInfo info, VoidCallback onTap) {
   return Material(
     color: Colors.transparent,
     child: InkWell(
@@ -1002,7 +1036,7 @@ void mostrarDialogoCsgo(BuildContext context) {
     context: context,
     builder: (_) => AlertDialog(
       title: const Text('Partidos CS:GO (demo)'),
-      content: const Text('Aquí luego mostraremos los partidos de la Major.'),
+      content: const Text('AquÃ­ luego mostraremos los partidos de la Major.'),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
@@ -1014,6 +1048,7 @@ void mostrarDialogoCsgo(BuildContext context) {
 }
 
 
+  
 
   Map<String, String> logosEquipos = {};
   Future<Map<String, String>> obtenerLogosValorant() async {
@@ -1209,9 +1244,6 @@ void cargarLogosEquipos() async {
 
   late Future<List<Noticia>> noticias;
 
-  final PageController pageController = PageController();
-  int currentPage = 0;
-
   late AnimationController card1Controller;
   late AnimationController card2Controller;
   late AnimationController card3Controller;
@@ -1225,7 +1257,7 @@ void cargarLogosEquipos() async {
   late Animation<double> card3FadeAnimation;
 
 
-// El método async:
+// El mÃ©todo async:
   @override
   void dispose() {
     pageController.dispose();
@@ -1451,12 +1483,12 @@ Widget buildApuestas1xbetTab(BuildContext context) {
         final data = jsonDecode(response.body);
 
         if (data['articles'] == null) {
-          print("[Noticias] No hay artículos");
+          print("[Noticias] No hay artÃ­culos");
           return [];
         }
 
         final articulos = data['articles'] as List;
-        print("[Noticias] Total artículos recibidos: ${articulos.length}");
+        print("[Noticias] Total artÃ­culos recibidos: ${articulos.length}");
 
         List<Noticia> noticias = [];
 
@@ -1466,8 +1498,8 @@ Widget buildApuestas1xbetTab(BuildContext context) {
           }
 
           noticias.add(Noticia(
-            titulo: articulo['title'] ?? "Sin título",
-            descripcion: articulo['description'] ?? "Sin descripción",
+            titulo: articulo['title'] ?? "Sin tÃ­tulo",
+            descripcion: articulo['description'] ?? "Sin descripciÃ³n",
             url: articulo['url'] ?? "",
             imagenUrl: articulo['urlToImage'] ?? "",
             fuente: articulo['source']?['name'] ?? "Desconocido",
@@ -1503,7 +1535,7 @@ Widget buildApuestas1xbetTab(BuildContext context) {
         }
         return "Hace ${diferencia.inHours} horas";
       } else if (diferencia.inDays < 7) {
-        return "Hace ${diferencia.inDays} días";
+        return "Hace ${diferencia.inDays} dÃ­as";
       } else {
         return "${dateTime.day}/${dateTime.month}/${dateTime.year}";
       }
@@ -1550,6 +1582,7 @@ Widget buildApuestas1xbetTab(BuildContext context) {
         final curvedAnimation = CurvedAnimation(
           parent: animation,
           curve: Curves.easeOutCubic,
+          
         );
         return SlideTransition(
           position: Tween<Offset>(
@@ -1628,12 +1661,11 @@ Widget buildApuestas1xbetTab(BuildContext context) {
     );
   }
   
- @override
+@override
 Widget build(BuildContext context) {
   // Usuario actual de Firebase
-  
-  
   final user = FirebaseAuth.instance.currentUser;
+
   return Scaffold(
     appBar: AppBar(
       backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -1642,12 +1674,12 @@ Widget build(BuildContext context) {
         child: Image.asset(
           'assets/icons/iconapp.png',
           errorBuilder: (context, error, stackTrace) {
-            return Icon(Icons.sports_esports, size: 32);
+            return const Icon(Icons.sports_esports, size: 32);
           },
         ),
       ),
       title: Text(
-        'ESPORTS SYNC',
+        'Esports Syncs',
         style: GoogleFonts.bebasNeue(
           fontSize: 24,
           fontWeight: FontWeight.bold,
@@ -1657,25 +1689,28 @@ Widget build(BuildContext context) {
       centerTitle: true,
       actions: [
         IconButton(
-          icon: Icon(Icons.account_circle),
+          icon: const Icon(Icons.account_circle),
           tooltip: user?.email ?? 'Usuario',
           onPressed: () {
             showDialog(
               context: context,
               builder: (context) => AlertDialog(
-                title: Text('Usuario'),
+                title: const Text('Usuario'),
                 content: Text(user?.email ?? 'No autenticado'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: Text('Cerrar'),
+                    child: const Text('Cerrar'),
                   ),
                   TextButton(
                     onPressed: () async {
                       await FirebaseAuth.instance.signOut();
                       Navigator.pop(context);
                     },
-                    child: Text('Cerrar Sesión', style: TextStyle(color: Colors.red)),
+                    child: const Text(
+                      'Cerrar Sesión',
+                      style: TextStyle(color: Colors.red),
+                    ),
                   ),
                 ],
               ),
@@ -1684,12 +1719,12 @@ Widget build(BuildContext context) {
         ),
       ],
       bottom: PreferredSize(
-        preferredSize: Size.fromHeight(4),
+        preferredSize: const Size.fromHeight(4),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              margin: EdgeInsets.symmetric(horizontal: 4),
+              margin: const EdgeInsets.symmetric(horizontal: 4),
               width: 8,
               height: 8,
               decoration: BoxDecoration(
@@ -1698,7 +1733,7 @@ Widget build(BuildContext context) {
               ),
             ),
             Container(
-              margin: EdgeInsets.symmetric(horizontal: 4),
+              margin: const EdgeInsets.symmetric(horizontal: 4),
               width: 8,
               height: 8,
               decoration: BoxDecoration(
@@ -1707,7 +1742,7 @@ Widget build(BuildContext context) {
               ),
             ),
             Container(
-              margin: EdgeInsets.symmetric(horizontal: 4),
+              margin: const EdgeInsets.symmetric(horizontal: 4),
               width: 8,
               height: 8,
               decoration: BoxDecoration(
@@ -1719,11 +1754,14 @@ Widget build(BuildContext context) {
         ),
       ),
     ),
+
+    // CUERPO CON PAGEVIEW
     body: PageView(
       controller: pageController,
       onPageChanged: (index) {
         setState(() {
           currentPage = index;
+          _selectedIndex = index;
         });
       },
       children: [
@@ -1732,26 +1770,40 @@ Widget build(BuildContext context) {
         buildApuestas1xbetTab(context),
       ],
     ),
+
+    // BOTTOM NAVIGATION BAR
+    bottomNavigationBar: BottomNavigationBar(
+      currentIndex: _selectedIndex,
+      onTap: (index) {
+        setState(() {
+          _selectedIndex = index;
+          currentPage = index;
+        });
+        pageController.animateToPage(
+          index,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      },
+      items: const [
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
+        BottomNavigationBarItem(icon: Icon(Icons.article), label: 'Noticias'),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.sports_esports),
+          label: 'Apuestas',
+        ),
+      ],
+    ),
   );
 }
 
 
+
   Widget buildPaginaInicio() {
-  return SingleChildScrollView( // 1) ahora toda la página puede hacer scroll
+  return SingleChildScrollView( // 1) ahora toda la pÃ¡gina puede hacer scroll
     child: Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Text(
-            "INICIO",
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-        ),
-
+        
         // Card de T1
         CampeonCard(
           campeonNombre: 'T1',
@@ -1880,7 +1932,7 @@ Widget build(BuildContext context) {
                   ],
                 );
               } else {
-                // ---------------- MÓVIL: GRIDVIEW EN UNA COLUMNA ----------------
+                // ---------------- MÃ“VIL: GRIDVIEW EN UNA COLUMNA ----------------
                 return GridView.count(
                   crossAxisCount: 1,
                   crossAxisSpacing: 16,
@@ -1935,7 +1987,7 @@ Widget build(BuildContext context) {
                       ),
                     ),
 
-                    // CSGO EN MÓVIL
+                    // CSGO EN MÃ“VIL
                     FutureBuilder<CsgoMajorInfo>(
                       future: infoMajorCsgo,
                       builder: (context, snapshot) {
@@ -1981,7 +2033,7 @@ Widget build(BuildContext context) {
 
     Noticia(
     titulo: "RAZORK will be Fnatic .",
-    descripcion: "Jungler Razork 🇪🇸 will be Fnatic 🇬🇧's starting jungler in the 2026 #LEC season",
+    descripcion: "Jungler Razork ðŸ‡ªðŸ‡¸ will be Fnatic ðŸ‡¬ðŸ‡§'s starting jungler in the 2026 #LEC season",
     url: "https://x.com/Sheep_Esports/status/1993813247926128706",
     imagenUrl: "https://pbs.twimg.com/card_img/1993813249469587456/pfol0MbF?format=jpg&name=small",
     fuente: "Oficial",
@@ -1990,7 +2042,7 @@ Widget build(BuildContext context) {
   ),
 
     Noticia(
-    titulo: "Toplaner Shelfmade 🇩🇪 and Jungler Markoon 🇳🇱 are set to join G2 NORD 🇩🇪",
+    titulo: "Toplaner Shelfmade ðŸ‡©ðŸ‡ª and Jungler Markoon ðŸ‡³ðŸ‡± are set to join G2 NORD ðŸ‡©ðŸ‡ª",
     descripcion: "",
     url: "https://www.sheepesports.com/en/articles/sources-shelfmade-and-markoon-set-to-join-g2-academy/en",
     imagenUrl: "https://pbs.twimg.com/card_img/1993823034470260736/HASL90-O?format=jpg&name=small", 
@@ -1999,8 +2051,8 @@ Widget build(BuildContext context) {
     juego: "11 Noviembre, 2025",
   ),
     Noticia(
-    titulo: "Delight 🇰🇷 will remain with Hanwha Life Esports.",
-    descripcion: "Delight 🇰🇷 will remain with Hanwha Life Esports 🇰🇷 for LCK 2026, as confirmed by the organization.",
+    titulo: "Delight ðŸ‡°ðŸ‡· will remain with Hanwha Life Esports.",
+    descripcion: "Delight ðŸ‡°ðŸ‡· will remain with Hanwha Life Esports ðŸ‡°ðŸ‡· for LCK 2026, as confirmed by the organization.",
     url: "https://www.sheepesports.com/en/articles/lol-lck-delight-re-signs-with-hanwha-life-esports/en",
     imagenUrl: "https://pbs.twimg.com/media/G6RVM7DWoAAl_4h?format=jpg&name=large", 
     fuente: "Oficial",
@@ -2009,8 +2061,8 @@ Widget build(BuildContext context) {
   ),
   
   Noticia(
-    titulo: "Dplus KIA 🇰🇷 has officially announced the signing of its new AD Carry, Smash 🇰🇷",
-    descripcion: "Dplus KIA 🇰🇷 has officially announced the signing of its new AD Carry, Smash 🇰🇷.",
+    titulo: "Dplus KIA ðŸ‡°ðŸ‡· has officially announced the signing of its new AD Carry, Smash ðŸ‡°ðŸ‡·",
+    descripcion: "Dplus KIA ðŸ‡°ðŸ‡· has officially announced the signing of its new AD Carry, Smash ðŸ‡°ðŸ‡·.",
     url: "https://x.com/Sheep_Esports/status/1991810038793744836",
     imagenUrl: "https://pbs.twimg.com/media/G6RT9FEXgAAl7aP?format=jpg&name=4096x4096", 
     fuente: "OFFICIAL",
@@ -2028,7 +2080,7 @@ Widget build(BuildContext context) {
   ),
   Noticia(
     titulo: "KEZNIT cerca de ENVY",
-    descripcion: "Reporte de @AkamaruVal,Keznit sera el duelista en lugar de Canezerra (menor de edad) y jugará con Eggsterr, Inspire y P0PPIN a falta de cerrar el quinto. Vuelve el Deus.",
+    descripcion: "Reporte de @AkamaruVal,Keznit sera el duelista en lugar de Canezerra (menor de edad) y jugarÃ¡ con Eggsterr, Inspire y P0PPIN a falta de cerrar el quinto. Vuelve el Deus.",
     url: "https://x.com/Lembo006/status/1988370535513027086",
     imagenUrl: "https://pbs.twimg.com/media/G5haSxRWoAAfcUm?format=jpg&name=900x900", 
     fuente: "RUMORS",
