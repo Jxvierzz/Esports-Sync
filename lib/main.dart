@@ -1,30 +1,34 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
-import 'dart:convert';
-import 'screens/twitter_feed.dart';
-import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert'; 
+
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-
-
-// ========== FIREBASE IMPORTS ==========
+// Firebase
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
+
+// Screens
 import 'screens/login_screen.dart';
 import 'screens/signup_screen.dart';
-
-// ========== MAIN CON FIREBASE ==========
+import 'screens/twitter_feed.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // AquÃ­ muy temprano
-  runApp(const MyApp());
-}
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(const MyApp()); 
+  }
+
+  const String PANDA_API_KEY = 'bNb9-cXoobITCt_SECQfNWY9otBsKdNeFZJuw4iR7pr15eWlR6k';
+
+    // ← ESTO faltaba en tu main actual
 class BettingPage extends StatelessWidget { 
 
 
@@ -201,13 +205,8 @@ class Partido {
 
 // ========== CLASE NOTICIA ==========
 class Noticia {
-  final String titulo;
-  final String descripcion;
-  final String url;
-  final String imagenUrl;
-  final String fuente;
-  final String fecha;
-  final String juego;
+  String titulo, descripcion, url, imagenUrl, fuente, fecha, juego;
+  
   Noticia({
     required this.titulo,
     required this.descripcion,
@@ -217,6 +216,27 @@ class Noticia {
     required this.fecha,
     required this.juego,
   });
+
+  // ← AÑADIR ESTOS DOS MÉTODOS AL FINAL
+  Map<String, dynamic> toJson() => {
+    'titulo': titulo,
+    'descripcion': descripcion,
+    'url': url,
+    'imagenUrl': imagenUrl,
+    'fuente': fuente,
+    'fecha': fecha,
+    'juego': juego,
+  };
+
+  factory Noticia.fromJson(Map<String, dynamic> json) => Noticia(
+    titulo: json['titulo'] ?? '',
+    descripcion: json['descripcion'] ?? '',
+    url: json['url'] ?? '',
+    imagenUrl: json['imagenUrl'] ?? '',
+    fuente: json['fuente'] ?? '',
+    fecha: json['fecha'] ?? '',
+    juego: json['juego'] ?? '',
+  );
 }
 
 // === WIDGET EQUIPO CON LOGO ===
@@ -278,7 +298,7 @@ class _CampeonCardState extends State<CampeonCard> with SingleTickerProviderStat
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: const Color.fromARGB(255, 251, 11, 3).withOpacity(0.9),
+                  color: Color.fromARGB(255, 33, 123, 146).withOpacity(0.9),
                   blurRadius: _glowAnimation.value,
                   spreadRadius: widget.borderWidth,
                 ),
@@ -289,7 +309,7 @@ class _CampeonCardState extends State<CampeonCard> with SingleTickerProviderStat
                 color: widget.cardColor,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: const Color.fromARGB(255, 255, 21, 0),
+                  color: Color.fromARGB(255, 33, 123, 146),
                   width: widget.borderWidth,
                 ),
                 boxShadow: [
@@ -312,8 +332,8 @@ class _CampeonCardState extends State<CampeonCard> with SingleTickerProviderStat
                       height: 68,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => const Icon(
-                        Icons.emoji_events,
-                        color: Color.fromARGB(255, 255, 0, 0),
+                        Icons.loop_outlined,
+                        color: Color.fromARGB(255, 33, 123, 146),
                         size: 60,
                       ),
                     ),
@@ -324,30 +344,32 @@ class _CampeonCardState extends State<CampeonCard> with SingleTickerProviderStat
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '¡Felicidades POR LA SEXTA ESTRELLA EN LOL ESPORTS!',
-                          style: TextStyle(
-                            color: const Color.fromARGB(197, 255, 17, 0),
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
-                            shadows: [
-                              Shadow(
-                                color: const Color.fromRGBO(255, 13, 0, 1),
-                                blurRadius: 3,
-                              ),
-                            ],
+                        Row(
+                        children: [
+                          Icon(Icons.circle, color: Colors.red, size: 8),
+                          const SizedBox(width: 4),
+                          Icon(Icons.sports_esports, color: Colors.white, size: 16),
+                          const SizedBox(width: 4),
+                          const Text(
+                            'EN VIVO',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
+                        ],
+                      ),
                         const SizedBox(height: 8),
                         Text(
                           widget.campeonNombre,
                           style: TextStyle(
-                            color: const Color.fromARGB(255, 255, 0, 0),
+                            color: const Color.fromARGB(255, 255, 255, 255),
                             fontSize: 25,
                             fontWeight: FontWeight.bold,
                             shadows: [
                               Shadow(
-                                color: Colors.amber.shade900,
+                                color: const Color.fromARGB(255, 0, 0, 0),
                                 blurRadius: 10,
                                 offset: const Offset(2, 2),
                               ),
@@ -379,41 +401,6 @@ class EquipoConLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget csgoMajorCard(CsgoMajorInfo info) {
-  return Container(
-    decoration: BoxDecoration(
-      color: Colors.black,
-      borderRadius: BorderRadius.circular(24),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.red.withOpacity(0.7),
-          blurRadius: 20,
-          spreadRadius: 3,
-        ),
-      ],
-    ),
-    padding: const EdgeInsets.all(18.0),
-    margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Image.asset('assets/icons/csgo.png', height: 40), // Cambia la ruta a tu logo CS:GO
-            SizedBox(width: 16),
-            Text('CS:GO', style: TextStyle(fontSize: 28, color: Colors.amber, fontWeight: FontWeight.bold)),
-          ],
-        ),
-        SizedBox(height: 8),
-        Text(info.mainTitle, style: TextStyle(color: Colors.redAccent, fontSize: 20)),
-        SizedBox(height: 8),
-        Text(info.subtitle, style: TextStyle(color: Colors.white70, fontSize: 16)),
-        SizedBox(height: 8),
-        Text(info.special, style: TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.w500)),
-      ],
-    ),
-  );
-}
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -427,7 +414,7 @@ class EquipoConLogo extends StatelessWidget {
               return const Icon(
                 Icons.sports_esports,
                 size: 32,
-                color: Color(0xFF2E3639),
+                color: Colors.white,
               );
             },
             loadingBuilder: (context, child, loadingProgress) {
@@ -443,13 +430,13 @@ class EquipoConLogo extends StatelessWidget {
           const Icon(
             Icons.sports_esports,
             size: 32,
-            color: Colors.grey,
+            color: Color.fromARGB(255, 255, 255, 255),
           ),
         const SizedBox(width: 8),
         Flexible(
           child: Text(
             nombreEquipo,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold,color: Colors.white,),
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -557,89 +544,35 @@ class _DialogoPartidosState extends State<DialogoPartidos>
 
   @override
 Widget build(BuildContext context) {
-    Future<CsgoMajorInfo> fetchCsgoMajorInfo() async {
-  await Future.delayed(const Duration(seconds: 1));
-  return CsgoMajorInfo(
-    mainTitle: 'Camino a la Major',
-    subtitle: 'PrÃ³xima parada: CS:GO Major',
-    special: 'Equipo destacado: TBA',
-  );
-}
-
-
   return FutureBuilder<List<Partido>>(
     future: partidosFiltrados,
     builder: (context, snapshot) {
       if (snapshot.connectionState == ConnectionState.waiting) {
         return AlertDialog(
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    widget.titulo,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,        // <-- antes seguro era negro/por defecto
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                IconButton(
-                icon: Icon(Icons.close),
-                onPressed: () => Navigator.pop(context),
-                padding: EdgeInsets.zero,
-                constraints: BoxConstraints(),
-                tooltip: "Cerrar",
-              ),
-              ],
+          title: Text(
+            widget.titulo,
+            style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            ),
           ),
-          content: Center(child: CircularProgressIndicator()),
+          content: const Center(child: CircularProgressIndicator()),
         );
       } else if (snapshot.hasError) {
         return AlertDialog(
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(widget.titulo),
-              IconButton(
-                icon: Icon(Icons.close),
-                onPressed: () => Navigator.pop(context),
-                padding: EdgeInsets.zero,
-                constraints: BoxConstraints(),
-                tooltip: "Cerrar",
-              ),
-            ],
-          ),
+          title: Text(widget.titulo),
           content: Text("Error: ${snapshot.error}"),
         );
       } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
         return AlertDialog(
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    widget.titulo,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,        // <-- antes seguro era negro/por defecto
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                IconButton(
-                icon: Icon(Icons.close),
-                onPressed: () => Navigator.pop(context),
-                padding: EdgeInsets.zero,
-                constraints: BoxConstraints(),
-                tooltip: "Cerrar",
-              ),
-              ],
+          title: Text(
+            widget.titulo,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-          content: Text("No hay eventos disponibles"),
+          content: const Text("No hay eventos disponibles"),
         );
       }
 
@@ -651,79 +584,67 @@ Widget build(BuildContext context) {
 
       return AlertDialog(
         title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  widget.titulo,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,        
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                widget.titulo,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
+            ),
             IconButton(
-              icon: Icon(Icons.close),
+              icon: const Icon(Icons.close),
               onPressed: () => Navigator.pop(context),
               padding: EdgeInsets.zero,
-              constraints: BoxConstraints(),
+              constraints: const BoxConstraints(),
               tooltip: "Cerrar",
             ),
-            if (widget.opcionesLiga.length > 1) ...[
-              SizedBox(width: 8),
-              DropdownButton<String>(
-                value: filtroLiga,
-                underline: Container(),
-                items: widget.opcionesLiga
-                    .map((opcion) => DropdownMenuItem(
-                          value: opcion,
-                          child: Text(opcion, style: TextStyle(fontSize: 14,color: Colors.white70)),
-                        ))
-                    .toList(),
-                onChanged: (nuevoValor) {
-                  setState(() {
-                    filtroLiga = nuevoValor!;
-                  });
-                },
-              ),
-            ],
           ],
         ),
-         content: Container(
+        content: SizedBox(
           width: double.maxFinite,
           child: ListView.builder(
-            
             shrinkWrap: true,
             itemCount: partidos.length,
             itemBuilder: (context, index) {
               final p = partidos[index];
               final terminado = partidoTerminado(p.hora);
+              final enVivo = esEnVivo(p.hora);
+
               return Card(
                 margin: const EdgeInsets.symmetric(vertical: 8),
-                color: terminado ? Colors.grey[200] : null,
+                color: terminado ? Colors.grey[900] : const Color(0xFF111827),
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Fila superior: fecha/hora + badge EN VIVO / FINALIZADO
                       Row(
                         children: [
                           Expanded(
                             child: Text(
                               formatearHora(p.hora),
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: 14,
                                 fontWeight: FontWeight.bold,
-                                color: terminado ? Colors.grey[600] : null,
+                                color: terminado
+                                    ? Colors.grey[400]
+                                    : Colors.white,
                               ),
                             ),
                           ),
-                          if (esEnVivo(p.hora))
+                          if (enVivo)
                             Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 3,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.red,
                                 borderRadius: BorderRadius.circular(4),
@@ -733,156 +654,96 @@ Widget build(BuildContext context) {
                                 children: [
                                   FadeTransition(
                                     opacity: pulseController,
-                                    child: Icon(Icons.circle,
-                                        color: Colors.white, size: 6),
+                                    child: const Icon(
+                                      Icons.circle,
+                                      color: Colors.white,
+                                      size: 6,
+                                    ),
                                   ),
-                                  SizedBox(width: 4),
-                                  Text("EN VIVO",
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold)),
+                                  const SizedBox(width: 4),
+                                  const Text(
+                                    'EN VIVO',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ],
                               ),
                             )
                           else if (terminado)
                             Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 3,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.grey[600],
                                 borderRadius: BorderRadius.circular(4),
                               ),
-                              child: Text("FINALIZADO",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold)),
+                              child: const Text(
+                                'FINALIZADO',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                         ],
                       ),
                       const SizedBox(height: 8),
-                      
-                      
-                      // ========== SECCIÃ“N CON RESULTADOS (MODIFICADA) ==========
+
+                      // Fila de equipos con logos
                       if (p.equipo1.isNotEmpty && p.equipo2.isNotEmpty)
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            // Equipo 1 con score
                             Expanded(
-                              child: Row(
-                                children: [
-                                  Flexible(
-                                    child: EquipoConLogo(
-                                      nombreEquipo: p.equipo1,
-                                      urlLogo: p.logoEquipo1,
-                                    ),
-                                  ),
-                                  // Mostrar score del equipo 1 si existe
-                                  if (p.scoreEquipo1 != null) ...[
-                                    SizedBox(width: 8),
-                                    Container(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: p.ganador == p.equipo1
-                                            ? Colors.green[100]
-                                            : Colors.grey[300],
-                                        borderRadius: BorderRadius.circular(6),
-                                        border: Border.all(
-                                          color: p.ganador == p.equipo1
-                                              ? Colors.green[700]!
-                                              : Colors.grey[500]!,
-                                          width: 2,
-                                        ),
-                                      ),
-                                      child: Text(
-                                        '${p.scoreEquipo1}',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: p.ganador == p.equipo1
-                                              ? Colors.green[900]
-                                              : Colors.grey[800],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ],
+                              child: EquipoConLogo(
+                                nombreEquipo: p.equipo1,
+                                urlLogo: p.logoEquipo1,
                               ),
                             ),
-                            
-                            // VS en el medio
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 12),
                               child: Text(
-                                "VS",
+                                'VS',
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.grey[700],
+                                  color: Colors.grey,
                                 ),
                               ),
                             ),
-                            
-                            // Equipo 2 con score
                             Expanded(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  // Mostrar score del equipo 2 si existe
-                                  if (p.scoreEquipo2 != null) ...[
-                                    Container(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: p.ganador == p.equipo2
-                                            ? Colors.green[100]
-                                            : Colors.grey[300],
-                                        borderRadius: BorderRadius.circular(6),
-                                        border: Border.all(
-                                          color: p.ganador == p.equipo2
-                                              ? Colors.green[700]!
-                                              : Colors.grey[500]!,
-                                          width: 2,
-                                        ),
-                                      ),
-                                      child: Text(
-                                        '${p.scoreEquipo2}',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: p.ganador == p.equipo2
-                                              ? Colors.green[900]
-                                              : Colors.grey[800],
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(width: 8),
-                                  ],
-                                  Flexible(
-                                    child: EquipoConLogo(
-                                      nombreEquipo: p.equipo2,
-                                      urlLogo: p.logoEquipo2,
-                                    ),
-                                  ),
-                                ],
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: EquipoConLogo(
+                                  nombreEquipo: p.equipo2,
+                                  urlLogo: p.logoEquipo2,
+                                ),
                               ),
                             ),
                           ],
                         ),
-                      // ========== FIN SECCIÃ“N CON RESULTADOS ==========
-                      
+
                       const SizedBox(height: 6),
-                      Text(p.torneo,
-                          style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-                      Text(p.formato,
-                          style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                      Text(
+                        p.torneo,
+                        style: TextStyle(
+                          color: Colors.grey[400],
+                          fontSize: 12,
+                        ),
+                      ),
+                      Text(
+                        p.formato,
+                        style: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: 11,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -894,8 +755,10 @@ Widget build(BuildContext context) {
     },
   );
 }
-
 }
+
+
+
 
 // ========== APP PRINCIPAL CON FIREBASE ==========
 class MyApp extends StatelessWidget {
@@ -1034,18 +897,17 @@ Future<CsgoMajorInfo> fetchCsgoMajorInfo() async {
 void mostrarDialogoCsgo(BuildContext context) {
   showDialog(
     context: context,
-    builder: (_) => AlertDialog(
-      title: const Text('Partidos CS:GO (demo)'),
-      content: const Text('AquÃ­ luego mostraremos los partidos de la Major.'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cerrar'),
-        ),
-      ],
-    ),
+    builder: (dialogContext) {
+      return DialogoPartidos(
+        partidosAPI: partidosCsgo,
+        opcionesLiga: const ['Todos'],
+        filtroInicial: 'Todos',
+        titulo: 'Próximos partidos CSGO / CS2',
+      );
+    },
   );
 }
+
 
 
   
@@ -1071,17 +933,26 @@ void cargarLogosEquipos() async {
     logosEquipos = await obtenerLogosValorant();
     setState(() {});
   }
+late Future<List<Partido>> partidosCsgo;
 
+String? avatarSheep;
 
   @override
   void initState() {
     super.initState();
     cargarLogosEquipos();
-    infoMajorCsgo = fetchCsgoMajorInfo();
+    partidoEnVivoDestacado = obtenerPartidoEnVivoDestacado();
     partidosLoL = obtenerPartidosLoL();
+    infoMajorCsgo = fetchCsgoMajorInfo();
     partidosValorant = obtenerPartidosValorant();
     partidosFortnite = obtenerPartidosFortnite();
-    noticias = obtenerNoticias();
+    partidosCsgo = obtenerPartidosCsgo();
+    noticiasDinamicas = obtenerNoticiasDinamicas();
+    obtenerAvatarSheep().then((url) {
+    setState(() {
+      avatarSheep = url;
+    });
+  });
 
     card1Controller = AnimationController(
       duration: Duration(milliseconds: 700),
@@ -1148,45 +1019,248 @@ void cargarLogosEquipos() async {
     Future.delayed(Duration(milliseconds: 200), () => card2Controller.forward());
     Future.delayed(Duration(milliseconds: 400), () => card3Controller.forward());
   }
+String _formatearFechaTweet(String? fechaISO) {
+  if (fechaISO == null) return 'Hoy';
+  try {
+    final fecha = DateTime.parse(fechaISO).toLocal();
+    return '${fecha.day}/${fecha.month} ${fecha.hour.toString().padLeft(2,'0')}:${fecha.minute.toString().padLeft(2,'0')}';
+  } catch (e) {
+    return 'Hoy';
+  }
+}
+
+late Future<List<Noticia>> noticiasDinamicas;
+List<Noticia> noticiasCache = [];
+List<Noticia> noticiasAnteriores = []; 
+bool tieneCache = false;
+
+Future<String?> obtenerAvatarSheep() async {
+  const String X_BEARER_TOKEN = 'AAAAAAAAAAAAAAAAAAAAALKh5QEAAAAASb7J8dNp0NkASO2G7ZJ6gdZEttE%3DGQjQ3FR09svZdDNGmYkxDHaMPEQraQPrZYXOND2CFmpLi6Z3MM';
+
+  final res = await http.get(
+    Uri.parse(
+      'https://api.twitter.com/2/users/by/username/Sheep_Esports'
+      '?user.fields=profile_image_url',
+    ),
+    headers: {'Authorization': 'Bearer $X_BEARER_TOKEN'},
+  );
+
+  if (res.statusCode != 200) {
+    print('Error avatar: ${res.statusCode} ${res.body}');
+    return null;
+  }
+
+  final data = jsonDecode(res.body);
+  return data['data']?['profile_image_url'] as String?;
+}
+
+Future<List<Noticia>> obtenerNoticiasDinamicas() async {
+  List<Noticia> cache = await cargarNoticiasCache();
+  if (cache.isNotEmpty) {
+    noticiasCache = cache;
+    return cache; 
+  }
+  List<Noticia> noticiasPrueba = [
+    Noticia(titulo: "🔥 RAZORK → Fnatic", descripcion: "Jungler Razork 🇪🇸 será titular Fnatic 🇬🇧 LEC 2026", url: "https://twitter.com/Sheep_Esports", imagenUrl: "", fuente: "🐑 Sheep", fecha: "21/12 19:30", juego: "LEC"),
+    Noticia(titulo: "G2 Academy + Markoon 🇰🇷", descripcion: "Shelfmade 🇸🇪 y Markoon 🇰🇷 a G2 NORD", url: "https://twitter.com/Sheep_Eports", imagenUrl: "", fuente: "🐑 Sheep", fecha: "21/12 18:45", juego: "LEC Academy"),
+  ];
+
+  try {
+    const String X_BEARER_TOKEN = 'AAAAAAAAAAAAAAAAAAAAALKh5QEAAAAASb7J8dNp0NkASO2G7ZJ6gdZEttE%3DGQjQ3FR09svZdDNGmYkxDHaMPEQraQPrZYXOND2CFmpLi6Z3MM';
+    
+    // Twitter API
+    final userRes = await http.get(
+      Uri.parse('https://api.twitter.com/2/users/by/username/Sheep_Esports'),
+      headers: {'Authorization': 'Bearer $X_BEARER_TOKEN'},
+    );
+    
+
+    if (userRes.statusCode == 200) {
+      final userData = jsonDecode(userRes.body);
+      final userId = userData['data']?['id'];
+      
+      if (userId != null) {
+        final tweetsRes = await http.get(
+          Uri.parse('https://api.twitter.com/2/users/$userId/tweets?max_results=10&tweet.fields=created_at'),
+          headers: {'Authorization': 'Bearer $X_BEARER_TOKEN'},
+        );
+
+        if (tweetsRes.statusCode == 200) {
+          final tweetsData = jsonDecode(tweetsRes.body);
+          final tweets = tweetsData['data'] as List? ?? [];
+          
+          if (tweets.isNotEmpty) {
+            List<Noticia> tweetsNoticia = tweets.map<Noticia>((tweet) {
+              final text = tweet['text'] ?? '';
+              return Noticia(
+                titulo: text.length > 60 ? '${text.substring(0, 60)}...' : text,
+                descripcion: text,
+                url: 'https://twitter.com/Sheep_Esports/status/${tweet['id']}',
+                imagenUrl: '',
+                fuente: '🐑 Sheep Esports',
+                fecha: _formatearFechaTweet(tweet['created_at']),
+                juego: 'Twitter',
+              );
+            }).toList();
+            
+            // ← GUARDAR TWEETS NUEVOS EN CACHÉ
+            noticiasCache = [...tweetsNoticia, ...noticiasPrueba];
+            await guardarNoticiasCache(noticiasCache);
+            return noticiasCache;
+          }
+        }
+      }
+    }
+  } catch (e) {
+    print('Error Twitter: $e');
+  }
+  
+  // ← SIEMPRE retorna algo
+  noticiasCache = noticiasPrueba;
+  await guardarNoticiasCache(noticiasCache);
+  return noticiasCache;
+}
+
+// ← FUNCIONES CACHE
+Future<List<Noticia>> cargarNoticiasCache() async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = prefs.getString('noticias_cache');
+    if (jsonString == null) return [];
+    
+    final List<dynamic> jsonList = jsonDecode(jsonString);
+    return jsonList.map((json) => Noticia.fromJson(json)).toList();
+  } catch (e) {
+    return [];
+  }
+}
+
+Future<void> guardarNoticiasCache(List<Noticia> noticias) async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonList = noticias.map((n) => n.toJson()).toList();
+    await prefs.setString('noticias_cache', jsonEncode(jsonList));
+  } catch (e) {
+    print('Error cache: $e');
+  }
+}
+
+
     
        Future<List<Partido>> obtenerPartidosValorant() async {
-  final logosEquipos = await obtenerLogosValorant();
-  final response = await http.get(Uri.parse("http://192.168.31.35:5000/api/v1/matches"));
-  if (response.statusCode == 200) {
-    final decoded = jsonDecode(response.body);
-    final matches = decoded['data'] as List;
-    List<Partido> partidos = [];
-    for (var match in matches) {
-      String equipo1 = match['teams'][0]['name'] ?? '';
-      String equipo2 = match['teams'][1]['name'] ?? '';
-      String equipo1Key = equipo1.trim().toLowerCase();
-      String equipo2Key = equipo2.trim().toLowerCase();
+  final uri = Uri.parse(
+    'https://api.pandascore.co/valorant/matches',
+  );
 
-      // Usa el Map de logos con nombres normalizados
-      String logo1 = logosEquipos[equipo1Key] ?? '';
-      String logo2 = logosEquipos[equipo2Key] ?? '';
+  final res = await http.get(
+    uri,
+    headers: {
+      'Authorization': 'Bearer $PANDA_API_KEY',
+    },
+  );
 
-      // ver la terminal para ver que nos trae de vuelta
-      print("Equipo1: '$equipo1' (key: '$equipo1Key') | Logo1: $logo1");
-      print("Equipo2: '$equipo2' (key: '$equipo2Key') | Logo2: $logo2");    
-
-      partidos.add(Partido(
-        hora: match['utc'] ?? '',
-        equipo1: equipo1,
-        equipo2: equipo2,
-        torneo: match['tournament'] ?? '',
-        formato: 'Bo3',
-        logoEquipo1: logo1,
-        logoEquipo2: logo2,
-        scoreEquipo1: match['teams'][0]['score'],
-        scoreEquipo2: match['teams'][1]['score'],
-        ganador: null,
-      ));
-    }
-    return partidos;
+  if (res.statusCode != 200) {
+    throw Exception('Error PandaScore: ${res.statusCode} ${res.body}');
   }
-  return [];
+
+  final List data = jsonDecode(res.body);
+
+  return data.map<Partido>((m) {
+    final opponents = (m['opponents'] ?? []) as List;
+
+    final teamA = opponents.isNotEmpty
+        ? (opponents[0]['opponent']?['name'] ?? 'TBD')
+        : 'TBD';
+
+    final teamB = opponents.length > 1
+        ? (opponents[1]['opponent']?['name'] ?? 'TBD')
+        : 'TBD';
+
+    final logoA = opponents.isNotEmpty
+        ? (opponents[0]['opponent']?['image_url'] ?? '')
+        : '';
+
+    final logoB = opponents.length > 1
+        ? (opponents[1]['opponent']?['image_url'] ?? '')
+        : '';
+
+    return Partido(
+      hora: m['begin_at'] ?? '',
+      equipo1: teamA,
+      equipo2: teamB,
+      torneo: m['tournament']?['name'] ?? '',
+      formato: m['number_of_games'] != null
+          ? 'Bo${m['number_of_games']}'
+          : 'Bo3',
+      logoEquipo1: logoA,
+      logoEquipo2: logoB,
+      scoreEquipo1: null,
+      scoreEquipo2: null,
+      ganador: null,
+    );
+  }).toList();
 }
+
+
+Future<List<Partido>> obtenerPartidosCsgo() async {
+  final uri = Uri.parse(
+    'https://api.pandascore.co/matches/upcoming?game=cs2&per_page=20',
+  );
+
+  final res = await http.get(
+    uri,
+    headers: {
+      'Authorization': 'Bearer $PANDA_API_KEY',
+    },
+  );
+
+  if (res.statusCode != 200) {
+    throw Exception('Error PandaScore: ${res.statusCode} ${res.body}');
+  }
+
+  final List data = jsonDecode(res.body);
+
+  return data.map<Partido>((m) {
+    final opponents = (m['opponents'] ?? []) as List;
+
+    final teamA = opponents.isNotEmpty
+        ? (opponents[0]['opponent']?['name'] ?? 'TBD')
+        : 'TBD';
+
+    final teamB = opponents.length > 1
+        ? (opponents[1]['opponent']?['name'] ?? 'TBD')
+        : 'TBD';
+
+    final logoA = opponents.isNotEmpty
+        ? (opponents[0]['opponent']?['image_url'] ?? '')
+        : '';
+
+    final logoB = opponents.length > 1
+        ? (opponents[1]['opponent']?['image_url'] ?? '')
+        : '';
+
+    final beginAt = m['begin_at'] ?? '';      // fecha/hora ISO
+    print('CSGO: $teamA vs $teamB @ $beginAt');   // DEBUG
+
+    return Partido(
+      hora: beginAt,
+      equipo1: teamA,
+      equipo2: teamB,
+      torneo: m['tournament']?['name'] ?? '',
+      formato: m['number_of_games'] != null
+          ? 'Bo${m['number_of_games']}'
+          : 'Bo3',
+      logoEquipo1: logoA,
+      logoEquipo2: logoB,
+      scoreEquipo1: null,
+      scoreEquipo2: null,
+      ganador: null,
+    );
+  }).toList();
+}
+
+
+
 
 
   void _launchURL(BuildContext context, String url) async {
@@ -1242,7 +1316,6 @@ void cargarLogosEquipos() async {
   late Future<List<Partido>> partidosFortnite;
   final List<String> opcionesLigaFortnite = ["Todos"];
 
-  late Future<List<Noticia>> noticias;
 
   late AnimationController card1Controller;
   late AnimationController card2Controller;
@@ -1366,6 +1439,62 @@ Widget buildApuestas1xbetTab(BuildContext context) {
     );
   }
 
+  late Future<Partido?> partidoEnVivoDestacado;
+  Future<Partido?> obtenerPartidoEnVivoDestacado() async {
+  final uri = Uri.parse(
+    'https://api.pandascore.co/matches'
+    '?filter[running]=true&per_page=1',
+  );
+
+  final res = await http.get(
+    uri,
+    headers: {'Authorization': 'Bearer $PANDA_API_KEY'},
+  );
+
+  if (res.statusCode != 200) {
+    print('Error live match: ${res.statusCode} ${res.body}');
+    return null;
+  }
+
+  final List data = jsonDecode(res.body);
+  if (data.isEmpty) return null;
+
+  final m = data.first;
+
+  final opponents = (m['opponents'] ?? []) as List;
+
+  final teamA = opponents.isNotEmpty
+      ? (opponents[0]['opponent']?['name'] ?? 'TBD')
+      : 'TBD';
+
+  final teamB = opponents.length > 1
+      ? (opponents[1]['opponent']?['name'] ?? 'TBD')
+      : 'TBD';
+
+  final logoA = opponents.isNotEmpty
+      ? (opponents[0]['opponent']?['image_url'] ?? '')
+      : '';
+
+  final logoB = opponents.length > 1
+      ? (opponents[1]['opponent']?['image_url'] ?? '')
+      : '';
+
+  return Partido(
+    hora: m['begin_at'] ?? '',
+    equipo1: teamA,
+    equipo2: teamB,
+    torneo: m['tournament']?['name'] ?? '',
+    formato: m['number_of_games'] != null
+        ? 'Bo${m['number_of_games']}'
+        : 'Bo3',
+    logoEquipo1: logoA,
+    logoEquipo2: logoB,
+    scoreEquipo1: null,
+    scoreEquipo2: null,
+    ganador: null,
+  );
+}
+
 
   Future<List<Partido>> obtenerPartidosLoL() async {
   const url =
@@ -1470,58 +1599,7 @@ Widget buildApuestas1xbetTab(BuildContext context) {
     return eventos;
   }
 
-  Future<List<Noticia>> obtenerNoticias() async {
-    print("[Noticias] Obteniendo noticias de esports...");
-    final url =
-        "";
 
-    try {
-      final response = await http.get(Uri.parse(url));
-      print("[Noticias] StatusCode: ${response.statusCode}");
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-
-        if (data['articles'] == null) {
-          print("[Noticias] No hay artÃ­culos");
-          return [];
-        }
-
-        final articulos = data['articles'] as List;
-        print("[Noticias] Total artÃ­culos recibidos: ${articulos.length}");
-
-        List<Noticia> noticias = [];
-
-        for (var articulo in articulos) {
-          if (articulo['title'] == null || articulo['title'] == "[Removed]") {
-            continue;
-          }
-
-          noticias.add(Noticia(
-            titulo: articulo['title'] ?? "Sin tÃ­tulo",
-            descripcion: articulo['description'] ?? "Sin descripciÃ³n",
-            url: articulo['url'] ?? "",
-            imagenUrl: articulo['urlToImage'] ?? "",
-            fuente: articulo['source']?['name'] ?? "Desconocido",
-            fecha: articulo['publishedAt'] != null
-                ? formatearFecha(articulo['publishedAt'])
-                : "Fecha desconocida",
-            juego: articulo['source']?['name'] ?? "Desconocido",
-          ));
-        }
-
-        print("[Noticias] Total noticias filtradas: ${noticias.length}");
-        return noticias;
-      } else {
-        print("[Noticias] Error: ${response.statusCode}");
-        print("[Noticias] Respuesta: ${response.body}");
-        return [];
-      }
-    } catch (e) {
-      print("[Noticias] Exception: $e");
-      return [];
-    }
-  }
 
   String formatearFecha(String fechaISO) {
     try {
@@ -1602,12 +1680,12 @@ Widget buildApuestas1xbetTab(BuildContext context) {
   void mostrarDialogoValorant(BuildContext context) {
     showGeneralDialog(
       context: context,
-      pageBuilder: (context, animation, secondaryAnimation) {
+      pageBuilder: (dialogcontext, animation, secondaryAnimation) {
         return DialogoPartidos(
           partidosAPI: partidosValorant,
           opcionesLiga: opcionesLigaValorant,
           filtroInicial: filtroLigaValorant,
-          titulo: "Valorant",
+          titulo: "Proximos Partidos Valorant",
         );
       },
       transitionBuilder: (context, animation, secondaryAnimation, child) {
@@ -1805,13 +1883,34 @@ Widget build(BuildContext context) {
       children: [
         
         // Card de T1
-        CampeonCard(
-          campeonNombre: 'T1',
-          campeonLogoUrl:
-              'http://static.lolesports.com/teams/1726801573959_539px-T1_2019_full_allmode.png',
-          cardColor: const Color.fromARGB(255, 0, 0, 0),
-          borderWidth: 3.0,
-        ),
+        FutureBuilder<Partido?>(
+  future: partidoEnVivoDestacado,
+  builder: (context, snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const CampeonCard(
+        campeonNombre: 'Cargando partido en vivo...',
+        campeonLogoUrl: 'https://…/placeholder.png',
+      );
+    }
+
+    if (!snapshot.hasData || snapshot.data == null) {
+      // Si no hay partido en vivo, puedes dejar T1 o un mensaje
+      return const CampeonCard(
+        campeonNombre: 'Sin partidos en vivo',
+        campeonLogoUrl: 'https://…/placeholder.png',
+      );
+    }
+
+    final p = snapshot.data!;
+    // Usa el equipo1 como “campeón” momentáneo
+    return CampeonCard(
+      campeonNombre: '${p.equipo1} vs ${p.equipo2}',
+      campeonLogoUrl: p.logoEquipo1.isNotEmpty
+          ? p.logoEquipo1
+          : 'https://…/placeholder.png',
+    );
+  },
+),
 
         // ---- CONTENEDOR DE CARDS (LOL / VAL / CSGO / FN) ----
         Padding(
@@ -1988,37 +2087,35 @@ Widget build(BuildContext context) {
                     ),
 
                     // CSGO EN MÃ“VIL
-                    FutureBuilder<CsgoMajorInfo>(
-                      future: infoMajorCsgo,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const Center(
-                              child: CircularProgressIndicator());
-                        } else if (snapshot.hasError || !snapshot.hasData) {
-                          return const Card(
-                            color: Colors.black,
-                            child: Center(
-                              child: Text(
-                                'Error cargando CS:GO',
-                                style: TextStyle(color: Colors.red),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          );
-                        }
+                  FutureBuilder<CsgoMajorInfo>(
+  future: infoMajorCsgo,
+  builder: (context, snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const Center(child: CircularProgressIndicator());
+    } else if (snapshot.hasError || !snapshot.hasData) {
+      return const Card(
+        color: Colors.black,
+        child: Center(
+          child: Text(
+            'Error cargando CS:GO',
+            style: TextStyle(color: Colors.red),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
 
-                        final info = snapshot.data!;
+    final info = snapshot.data!;
 
-                        return SizedBox(
-                          height: 160,
-                          child: csgoMajorCard(
-                            info,
-                            () => mostrarDialogoCsgo(context),
-                           ),
-                        );
-                      },
-                    ),
+    return SizedBox(
+      height: 160,
+      child: csgoMajorCard(
+        info,
+        () => mostrarDialogoCsgo(context), // ← aquí ya conecta con la lista
+      ),
+    );
+  },
+),
                   ],
                 );
               }
@@ -2029,163 +2126,170 @@ Widget build(BuildContext context) {
     ),
   );
 }
-  List<Noticia> noticiasManuales = [
-
-    Noticia(
-    titulo: "RAZORK will be Fnatic .",
-    descripcion: "Jungler Razork ðŸ‡ªðŸ‡¸ will be Fnatic ðŸ‡¬ðŸ‡§'s starting jungler in the 2026 #LEC season",
-    url: "https://x.com/Sheep_Esports/status/1993813247926128706",
-    imagenUrl: "https://pbs.twimg.com/card_img/1993813249469587456/pfol0MbF?format=jpg&name=small",
-    fuente: "Oficial",
-    fecha: "26 Noviembre, 2025",
-    juego: "LE"
-  ),
-
-    Noticia(
-    titulo: "Toplaner Shelfmade ðŸ‡©ðŸ‡ª and Jungler Markoon ðŸ‡³ðŸ‡± are set to join G2 NORD ðŸ‡©ðŸ‡ª",
-    descripcion: "",
-    url: "https://www.sheepesports.com/en/articles/sources-shelfmade-and-markoon-set-to-join-g2-academy/en",
-    imagenUrl: "https://pbs.twimg.com/card_img/1993823034470260736/HASL90-O?format=jpg&name=small", 
-    fuente: "Oficial",
-    fecha: "26 Noviembre, 2025",
-    juego: "11 Noviembre, 2025",
-  ),
-    Noticia(
-    titulo: "Delight ðŸ‡°ðŸ‡· will remain with Hanwha Life Esports.",
-    descripcion: "Delight ðŸ‡°ðŸ‡· will remain with Hanwha Life Esports ðŸ‡°ðŸ‡· for LCK 2026, as confirmed by the organization.",
-    url: "https://www.sheepesports.com/en/articles/lol-lck-delight-re-signs-with-hanwha-life-esports/en",
-    imagenUrl: "https://pbs.twimg.com/media/G6RVM7DWoAAl_4h?format=jpg&name=large", 
-    fuente: "Oficial",
-    fecha: "21 Noviembre, 2025",
-    juego: "11 Noviembre, 2025",
-  ),
-  
-  Noticia(
-    titulo: "Dplus KIA ðŸ‡°ðŸ‡· has officially announced the signing of its new AD Carry, Smash ðŸ‡°ðŸ‡·",
-    descripcion: "Dplus KIA ðŸ‡°ðŸ‡· has officially announced the signing of its new AD Carry, Smash ðŸ‡°ðŸ‡·.",
-    url: "https://x.com/Sheep_Esports/status/1991810038793744836",
-    imagenUrl: "https://pbs.twimg.com/media/G6RT9FEXgAAl7aP?format=jpg&name=4096x4096", 
-    fuente: "OFFICIAL",
-    fecha: "21 Noviembre, 2025",
-    juego: "11 Noviembre, 2025",
-  ),
-  Noticia(
-    titulo: "GUMAYUSI OUT OF T1",
-    descripcion: "Se esperan cambios importantes en campeones y jugabilidad.",
-    url: "https://x.com/T1LoL/status/1990389461771816974",
-    imagenUrl: "https://pbs.twimg.com/media/G59CCtVa0AAAgNI?format=jpg&name=large", 
-    fuente: "OFFICIAL",
-    fecha: "17 Noviembre, 2025",
-   juego: "11 Noviembre, 2025",
-  ),
-  Noticia(
-    titulo: "KEZNIT cerca de ENVY",
-    descripcion: "Reporte de @AkamaruVal,Keznit sera el duelista en lugar de Canezerra (menor de edad) y jugarÃ¡ con Eggsterr, Inspire y P0PPIN a falta de cerrar el quinto. Vuelve el Deus.",
-    url: "https://x.com/Lembo006/status/1988370535513027086",
-    imagenUrl: "https://pbs.twimg.com/media/G5haSxRWoAAfcUm?format=jpg&name=900x900", 
-    fuente: "RUMORS",
-    fecha: "11 Noviembre, 2025",
-    juego: "11 Noviembre, 2025",
-  ),
-  
-  
-];
-
-  
   Widget buildPaginaNoticias() {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Text(
-            "Noticias y Rumores",
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              fontStyle: FontStyle.italic,
+  return Column(
+    children: [
+      Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "Noticias y Rumores",
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                fontStyle: FontStyle.italic,
+                color: Colors.white,
+              ),
             ),
-          ),
+            IconButton(
+              icon: Icon(Icons.refresh, color: Colors.teal),
+              onPressed: () {
+                setState(() {
+                  noticiasDinamicas = obtenerNoticiasDinamicas(); // ← Refresh
+                });
+              },
+            ),
+          ],
         ),
-        Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.all(16),
-              itemCount: noticiasManuales.length,
-              itemBuilder: (context, index) {
-                final noticia = noticiasManuales[index];
-                return Card(
-                  margin: EdgeInsets.only(bottom: 16),
+      ),
+      Expanded(
+        child: FutureBuilder<List<Noticia>>(
+          future: noticiasDinamicas,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(
+                child: CircularProgressIndicator(color: Colors.teal),
+              );
+            }
+            
+                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.newspaper, size: 64, color: Colors.grey), // ← CAMBIADO
+                  SizedBox(height: 16),
+                  Text('Sin noticias disponibles', style: TextStyle(color: Colors.white70, fontSize: 18)),
+                  Text('Toca 🔄 para actualizar', style: TextStyle(color: Colors.grey)),
+                ],
+              ),
+            );
+          }
+            
+            final noticias = snapshot.data!;
+            return RefreshIndicator(
+              onRefresh: () => noticiasDinamicas,
+              color: Colors.teal,
+              child: ListView.builder(
+                padding: EdgeInsets.all(16),
+                itemCount: noticias.length,
+                itemBuilder: (context, index) {
+                  final noticia = noticias[index];
+                  return Card(
+                  margin: const EdgeInsets.only(bottom: 16),
                   clipBehavior: Clip.antiAlias,
                   elevation: 3,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Si tienes imagen
-                      noticia.imagenUrl.isNotEmpty
-                          ? Image.network(noticia.imagenUrl,
-                              height: 200,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => Container(
-                                height: 200,
-                                color: Colors.grey[300],
-                                child: Center(
-                                  child: Icon(Icons.newspaper, size: 50, color: Colors.grey),
-                                ),
-                              ),
-                            )
-                          : Container(),
-                      Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
+                  child: InkWell(
+                    onTap: () => launchUrl(Uri.parse(noticia.url)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Cabecera sencilla (icono + Sheep Esports)
+                        Container(
+                          height: 180,
+                          width: double.infinity,
+                          color: Colors.teal[50],
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.teal,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(noticia.fuente,
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold)),
-                                ),
-                                SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(noticia.fecha,
-                                      style: TextStyle(
-                                          color: Colors.grey[600],
-                                          fontSize: 12,
-                                          overflow: TextOverflow.ellipsis)),
-                                ),
-                                Icon(Icons.open_in_new, size: 16, color: Colors.grey),
+                                Icon(Icons.sports_esports, size: 50, color: Colors.teal),
+                                SizedBox(height: 8),
+                                Text('🐑 Sheep Esports', style: TextStyle(color: Colors.teal[800])),
                               ],
                             ),
-                            SizedBox(height: 12),
-                            Text(noticia.titulo,
-                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.deepOrange,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      noticia.fuente,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      noticia.fecha,
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 12,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ),
+                                  const Icon(Icons.open_in_new,
+                                      size: 16, color: Colors.teal),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              // TÍTULO DE LA NOTICIA
+                              Text(
+                                noticia.titulo,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
                                 maxLines: 2,
-                                overflow: TextOverflow.ellipsis),
-                            SizedBox(height: 8),
-                            Text(noticia.descripcion,
-                                style: TextStyle(color: Colors.grey[700], fontSize: 14),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 8),
+                              // DESCRIPCIÓN / TEXTO DEL TWEET
+                              Text(
+                                noticia.descripcion,
+                                style: TextStyle(
+                                  color: Colors.grey[300],
+                                  fontSize: 14,
+                                ),
                                 maxLines: 3,
-                                overflow: TextOverflow.ellipsis),
-                         ],
-                      ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              );
-            },
-          ),
+                  ),
+                );
+                },
+              ),
+            );
+          },
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
+
   
   Widget _buildGameCard(
     BuildContext context, {
