@@ -2221,11 +2221,10 @@ Widget build(BuildContext context) {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              "Noticias y Rumores",
+              "News and rumors",
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                fontStyle: FontStyle.italic,
                 color: const Color.fromARGB(255, 255, 255, 255),
               ),
             ),

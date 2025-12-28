@@ -174,11 +174,11 @@ print('Usuario logueado: ${FirebaseAuth.instance.currentUser}');
                 ElevatedButton.icon(
                 onPressed: () => _ingresarComoInvitado(context),
                 icon: Icon(Icons.person_off),
-                label: Text('Continuar como Invitado'),
+                label: Text('Continue without account'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFF2D492),
                   foregroundColor: const Color.fromARGB(255, 0, 0, 0),
-                  padding: EdgeInsets.symmetric(vertical: 12),
+                  padding: EdgeInsets.symmetric(vertical: 24),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
               ),
