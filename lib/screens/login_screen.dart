@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart'; 
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,6 +18,8 @@ class _LoginScreenState extends State<LoginScreen> {
   
   bool _isLoading = false;
   bool _obscurePassword = true;
+  
+
   
   Future<void> _signIn() async {
     if (!_formKey.currentState!.validate()) return;
@@ -48,13 +51,14 @@ print('Usuario logueado: ${FirebaseAuth.instance.currentUser}');
       }
     }
   }
+  
 
 
   
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1a1a2e),
+      backgroundColor: const Color.fromARGB(255, 0, 0, 0),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -90,7 +94,7 @@ print('Usuario logueado: ${FirebaseAuth.instance.currentUser}');
                   decoration: InputDecoration(
                     labelText: 'Email',
                     labelStyle: const TextStyle(color: Colors.white70),
-                    prefixIcon: const Icon(Icons.email, color: Color(0xFF00d9ff)),
+                    prefixIcon: const Icon(Icons.email, color: Color(0xFFF2D492)),
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.1),
                     border: OutlineInputBorder(
@@ -112,8 +116,8 @@ print('Usuario logueado: ${FirebaseAuth.instance.currentUser}');
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     labelText: 'Password',
-                    labelStyle: const TextStyle(color: Colors.white70),
-                    prefixIcon: const Icon(Icons.lock, color: Color(0xFF00d9ff)),
+                    labelStyle: const TextStyle(color: Color.fromARGB(179, 255, 255, 255)),
+                    prefixIcon: const Icon(Icons.lock, color: Color(0xFFF2D492)),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword ? Icons.visibility : Icons.visibility_off,
@@ -140,11 +144,11 @@ print('Usuario logueado: ${FirebaseAuth.instance.currentUser}');
                 ),
                 const SizedBox(height: 24),
                 _isLoading
-                    ? const Center(child: CircularProgressIndicator(color: Color(0xFF00d9ff)))
+                    ? const Center(child: CircularProgressIndicator(color: Color(0xFFF2D492)))
                     : ElevatedButton(
                         onPressed: _signIn,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF00d9ff),
+                          backgroundColor: const Color(0xFFF2D492),
                           foregroundColor: Colors.black,
                           padding: const EdgeInsets.all(16),
                           shape: RoundedRectangleBorder(
@@ -164,15 +168,51 @@ print('Usuario logueado: ${FirebaseAuth.instance.currentUser}');
                   },
                   child: const Text(
                     'Don\'t have an account? Sign up',
-                    style: TextStyle(color: Color(0xFF00d9ff)),
+                    style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
                   ),
                 ),
+                ElevatedButton.icon(
+                onPressed: () => _ingresarComoInvitado(context),
+                icon: Icon(Icons.person_off),
+                label: Text('Continuar como Invitado'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFF2D492),
+                  foregroundColor: const Color.fromARGB(255, 0, 0, 0),
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
               ],
             ),
           ),
         ),
       ),
     );
+
+  
+
+  }
+  Future<void> _ingresarComoInvitado(BuildContext context) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Center(child: CircularProgressIndicator()),
+    );
+
+    await Future.delayed(Duration(milliseconds: 800));
+
+    Navigator.of(context).pop();
+
+    await _guardarSesionInvitada();
+
+    Navigator.pushReplacementNamed(context, '/home');
+  }
+
+  Future<void> _guardarSesionInvitada() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_type', 'invitado');
+    await prefs.setString('user_id', 'guest_${DateTime.now().millisecondsSinceEpoch}');
+    await prefs.setBool('is_logged_in', true);
   }
   
   @override
@@ -182,4 +222,3 @@ print('Usuario logueado: ${FirebaseAuth.instance.currentUser}');
     super.dispose();
   }
 }
-

@@ -58,10 +58,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1a1a2e),
+      backgroundColor: const Color.fromARGB(255, 0, 0, 0),
       appBar: AppBar(
-        title: const Text('Crear Cuenta'),
-        backgroundColor: Colors.transparent,
+        title: const Text(''),
+        backgroundColor: const Color.fromARGB(255, 0, 0, 0),
         elevation: 0,
       ),
       body: SafeArea(
@@ -78,7 +78,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 
                 const SizedBox(height: 10),
                 const Text(
-                  'Esports Sync',
+                  'Crear Cuenta',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 28,
@@ -95,7 +95,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   decoration: InputDecoration(
                     labelText: 'Correo electrónico',
                     labelStyle: const TextStyle(color: Colors.white70),
-                    prefixIcon: const Icon(Icons.email, color: Color(0xFF00d9ff)),
+                    prefixIcon: const Icon(Icons.email, color: Color(0xFFF2D492)),
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.1),
                     border: OutlineInputBorder(
@@ -123,7 +123,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   decoration: InputDecoration(
                     labelText: 'Contraseña',
                     labelStyle: const TextStyle(color: Colors.white70),
-                    prefixIcon: const Icon(Icons.lock, color: Color(0xFF00d9ff)),
+                    prefixIcon: const Icon(Icons.lock, color: Color(0xFFF2D492)),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword ? Icons.visibility : Icons.visibility_off,
@@ -160,7 +160,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   decoration: InputDecoration(
                     labelText: 'Confirmar contraseña',
                     labelStyle: const TextStyle(color: Colors.white70),
-                    prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF00d9ff)),
+                    prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFF2D492)),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
@@ -193,8 +193,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     : ElevatedButton(
                         onPressed: _signUp,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF00d9ff),
-                          foregroundColor: Colors.black,
+                          backgroundColor: const Color(0xFFF2D492),
+                          foregroundColor: const Color.fromARGB(255, 255, 255, 255),
                           padding: const EdgeInsets.all(16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -214,7 +214,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   },
                   child: const Text(
                     '¿Ya tienes cuenta? Inicia sesión',
-                    style: TextStyle(color: Color(0xFF00d9ff)),
+                    style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
                   ),
                 ),
               ],

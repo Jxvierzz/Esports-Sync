@@ -277,6 +277,7 @@ class _CampeonCardState extends State<CampeonCard> with SingleTickerProviderStat
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
   }
+  
 
   @override
   void dispose() {
@@ -298,7 +299,7 @@ class _CampeonCardState extends State<CampeonCard> with SingleTickerProviderStat
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Color.fromARGB(255, 33, 123, 146).withOpacity(0.9),
+                  color: Color(0xFFF2D492).withOpacity(0.9),
                   blurRadius: _glowAnimation.value,
                   spreadRadius: widget.borderWidth,
                 ),
@@ -309,7 +310,7 @@ class _CampeonCardState extends State<CampeonCard> with SingleTickerProviderStat
                 color: widget.cardColor,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: Color.fromARGB(255, 33, 123, 146),
+                  color: Color(0xFFF2D492),
                   width: widget.borderWidth,
                 ),
                 boxShadow: [
@@ -333,7 +334,7 @@ class _CampeonCardState extends State<CampeonCard> with SingleTickerProviderStat
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => const Icon(
                         Icons.loop_outlined,
-                        color: Color.fromARGB(255, 33, 123, 146),
+                        color: Color(0xFFF2D492),
                         size: 60,
                       ),
                     ),
@@ -577,10 +578,20 @@ Widget build(BuildContext context) {
       }
 
       final todosPartidos = snapshot.data!;
-      final partidos = todosPartidos.where((p) {
+
+      // 1) aplicas filtro de liga
+      final filtradosPorLiga = todosPartidos.where((p) {
         if (filtroLiga == "Todos") return true;
         return p.torneo.toLowerCase().contains(filtroLiga.toLowerCase());
-      }).toList();
+      });
+
+      // 2) eliminas partidos ya finalizados
+      final partidos = filtradosPorLiga
+          .where((p) => !partidoTerminado(p.hora))
+          .toList();
+
+      // si quieres, puedes ordenar por fecha
+      partidos.sort((a, b) => a.hora.compareTo(b.hora));
 
       return AlertDialog(
         title: Row(
@@ -757,7 +768,9 @@ Widget build(BuildContext context) {
 }
 }
 
-
+const fondoNegro = Color(0xFF000000);
+const superficieNegra = Color(0xFF050505);
+const textoSecundario = Color(0xFFB0B3C0);
 
 
 // ========== APP PRINCIPAL CON FIREBASE ==========
@@ -765,40 +778,100 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
+    const fondoOscuro = Color(0xFF050608);
+    const superficieOscura = Color(0xFF111318);
+    const dorado = Color.fromARGB(255, 0, 0, 0);
+    const doradoClaro = Color(0xFFF1D08A);
+
+    final baseTextTheme = GoogleFonts.montserratTextTheme();
+
     return MaterialApp(
       title: 'Esports Sync',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFF00D9FF),
-      brightness: Brightness.dark,
-    ),
-    textTheme: GoogleFonts.bebasNeueTextTheme(),
-    ),
+         useMaterial3: true,
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: fondoNegro,
+        colorScheme: const ColorScheme.dark(
+          primary: Colors.white,        // color principal (texto/botones)
+          secondary: Colors.white,      // acento (puedes cambiar a gris)
+          background: fondoNegro,
+          surface: superficieNegra,     // cards / dialogs muy oscuros
+        ),
+        cardColor: superficieOscura,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF050608),
+          elevation: 0,
+          iconTheme: IconThemeData(color: Color(0xFFF2D492)),
+          titleTextStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        iconTheme: const IconThemeData(
+          color: Color(0xFFF2D492),
+        ),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: Color.fromARGB(255, 0, 0, 0),
+          foregroundColor: Colors.black,
+        ),
+        textTheme: baseTextTheme.copyWith(
+          headlineLarge: GoogleFonts.montserrat(
+            fontSize: 32,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.2,
+            color: Colors.white,
+          ),
+          titleLarge: GoogleFonts.montserrat(
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+          titleMedium: GoogleFonts.montserrat(
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+          ),
+          bodyLarge: GoogleFonts.inter(
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+            color: const Color(0xFFB0B3C0),
+          ),
+          bodyMedium: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: const Color(0xFFB0B3C0),
+          ),
+          labelLarge: GoogleFonts.montserrat(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+      ),
       routes: {
         '/login': (context) => const LoginScreen(),
-        '/signup': (context) => const SignUpScreen(),
+        '/signup': (context) => const SignUpScreen(),  
         '/home': (context) => const MyHomePage(title: 'Esports Sync'),
       },
       home: StreamBuilder<User?>(
-  stream: FirebaseAuth.instance.authStateChanges(),
-  builder: (context, snapshot) {
-    if (snapshot.connectionState == ConnectionState.waiting) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF1a1a2e),
-        body: Center(child: CircularProgressIndicator(color: Color(0xFF00d9ff))),
-        
-      );
-    }
-    if (snapshot.hasData) {
-      return const MyHomePage(title: "Esports Sync");
-    }
-    return const LoginScreen();
-  },
-)
-
-
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              backgroundColor: fondoOscuro,
+              body: Center(
+                child: CircularProgressIndicator(color: dorado),
+              ),
+            );
+          }
+          if (snapshot.hasData) {
+            return const MyHomePage(title: "Esports Sync");
+          }
+          return const LoginScreen();
+        },
+      ),
     );
   }
 }
@@ -820,13 +893,19 @@ class MyHomePage extends StatefulWidget {
 
 //-----------------------------------------------
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
+
+  final PageController pageController = PageController();
+  int currentPage = 0;
+  int _selectedIndex = 0;
+  
+  
+  bool isInvitado = false;  // ⭐️ Sin guión bajo
+
+  
+  
   
   
   // ==== VARIABLES DE ESTADO AQUÃ ====
-  final PageController pageController = PageController();
-  int currentPage = 0;
-
-  int _selectedIndex = 0;
  
  
   //--------------CSGO--------------------------
@@ -941,6 +1020,7 @@ String? avatarSheep;
   void initState() {
     super.initState();
     cargarLogosEquipos();
+    _verificarSesion();
     partidoEnVivoDestacado = obtenerPartidoEnVivoDestacado();
     partidosLoL = obtenerPartidosLoL();
     infoMajorCsgo = fetchCsgoMajorInfo();
@@ -1019,6 +1099,10 @@ String? avatarSheep;
     Future.delayed(Duration(milliseconds: 200), () => card2Controller.forward());
     Future.delayed(Duration(milliseconds: 400), () => card3Controller.forward());
   }
+  
+
+    
+
 String _formatearFechaTweet(String? fechaISO) {
   if (fechaISO == null) return 'Hoy';
   try {
@@ -1055,71 +1139,75 @@ Future<String?> obtenerAvatarSheep() async {
 }
 
 Future<List<Noticia>> obtenerNoticiasDinamicas() async {
-  List<Noticia> cache = await cargarNoticiasCache();
-  if (cache.isNotEmpty) {
-    noticiasCache = cache;
-    return cache; 
-  }
-  List<Noticia> noticiasPrueba = [
-    Noticia(titulo: "🔥 RAZORK → Fnatic", descripcion: "Jungler Razork 🇪🇸 será titular Fnatic 🇬🇧 LEC 2026", url: "https://twitter.com/Sheep_Esports", imagenUrl: "", fuente: "🐑 Sheep", fecha: "21/12 19:30", juego: "LEC"),
-    Noticia(titulo: "G2 Academy + Markoon 🇰🇷", descripcion: "Shelfmade 🇸🇪 y Markoon 🇰🇷 a G2 NORD", url: "https://twitter.com/Sheep_Eports", imagenUrl: "", fuente: "🐑 Sheep", fecha: "21/12 18:45", juego: "LEC Academy"),
-  ];
+  // 1) Cargar caché (por si la API falla)
+  final cache = await cargarNoticiasCache();
+
+  const String X_BEARER_TOKEN = 'AAAAAAAAAAAAAAAAAAAAALKh5QEAAAAASb7J8dNp0NkASO2G7ZJ6gdZEttE%3DGQjQ3FR09svZdDNGmYkxDHaMPEQraQPrZYXOND2CFmpLi6Z3MM';
 
   try {
-    const String X_BEARER_TOKEN = 'AAAAAAAAAAAAAAAAAAAAALKh5QEAAAAASb7J8dNp0NkASO2G7ZJ6gdZEttE%3DGQjQ3FR09svZdDNGmYkxDHaMPEQraQPrZYXOND2CFmpLi6Z3MM';
-    
-    // Twitter API
+    // 2) X: obtener userId
     final userRes = await http.get(
-      Uri.parse('https://api.twitter.com/2/users/by/username/Sheep_Esports'),
+      Uri.parse(
+          'https://api.twitter.com/2/users/by/username/Sheep_Esports'),
       headers: {'Authorization': 'Bearer $X_BEARER_TOKEN'},
     );
-    
+    print('userRes status: ${userRes.statusCode}');
 
-    if (userRes.statusCode == 200) {
-      final userData = jsonDecode(userRes.body);
-      final userId = userData['data']?['id'];
-      
-      if (userId != null) {
-        final tweetsRes = await http.get(
-          Uri.parse('https://api.twitter.com/2/users/$userId/tweets?max_results=10&tweet.fields=created_at'),
-          headers: {'Authorization': 'Bearer $X_BEARER_TOKEN'},
-        );
-
-        if (tweetsRes.statusCode == 200) {
-          final tweetsData = jsonDecode(tweetsRes.body);
-          final tweets = tweetsData['data'] as List? ?? [];
-          
-          if (tweets.isNotEmpty) {
-            List<Noticia> tweetsNoticia = tweets.map<Noticia>((tweet) {
-              final text = tweet['text'] ?? '';
-              return Noticia(
-                titulo: text.length > 60 ? '${text.substring(0, 60)}...' : text,
-                descripcion: text,
-                url: 'https://twitter.com/Sheep_Esports/status/${tweet['id']}',
-                imagenUrl: '',
-                fuente: '🐑 Sheep Esports',
-                fecha: _formatearFechaTweet(tweet['created_at']),
-                juego: 'Twitter',
-              );
-            }).toList();
-            
-            // ← GUARDAR TWEETS NUEVOS EN CACHÉ
-            noticiasCache = [...tweetsNoticia, ...noticiasPrueba];
-            await guardarNoticiasCache(noticiasCache);
-            return noticiasCache;
-          }
-        }
-      }
+    if (userRes.statusCode != 200) {
+      // Si falla, uso caché (si hay)
+      if (cache.isNotEmpty) return cache;
+      return []; // o tus noticiasPrueba
     }
+
+    final userData = jsonDecode(userRes.body);
+    final userId = userData['data']?['id'];
+    if (userId == null) {
+      if (cache.isNotEmpty) return cache;
+      return [];
+    }
+
+    // 3) X: obtener tweets
+    final tweetsRes = await http.get(
+      Uri.parse(
+        'https://api.twitter.com/2/users/$userId/tweets'
+        '?max_results=10&tweet.fields=created_at',
+      ),
+      headers: {'Authorization': 'Bearer $X_BEARER_TOKEN'},
+    );
+    print('tweetsRes status: ${tweetsRes.statusCode}');
+
+    if (tweetsRes.statusCode != 200) {
+      if (cache.isNotEmpty) return cache;
+      return [];
+    }
+
+    final tweetsData = jsonDecode(tweetsRes.body);
+    final tweets = tweetsData['data'] as List? ?? [];
+
+    final noticias = tweets.map<Noticia>((tweet) {
+      final text = tweet['text'] ?? '';
+      return Noticia(
+        titulo: text.length > 60 ? '${text.substring(0, 60)}...' : text,
+        descripcion: text,
+        url: 'https://twitter.com/Sheep_Esports/status/${tweet['id']}',
+        imagenUrl: '',
+        fuente: '🐑 Sheep Esports',
+        fecha: _formatearFechaTweet(tweet['created_at']),
+        juego: 'Twitter',
+      );
+    }).toList();
+
+    // 4) Guardar en caché y devolver
+    await guardarNoticiasCache(noticias);
+    return noticias;
   } catch (e) {
     print('Error Twitter: $e');
+    // 5) En cualquier error, uso caché
+    if (cache.isNotEmpty) return cache;
+    return [];
   }
-  
-  // ← SIEMPRE retorna algo
-  noticiasCache = noticiasPrueba;
-  await guardarNoticiasCache(noticiasCache);
-  return noticiasCache;
 }
+
 
 // ← FUNCIONES CACHE
 Future<List<Noticia>> cargarNoticiasCache() async {
@@ -1384,7 +1472,7 @@ Widget buildApuestas1xbetTab(BuildContext context) {
                       children: [
                         SlidableAction(
                           onPressed: (_) => _launchURL(context, match['bettingUrl']!),
-                          backgroundColor: Colors.green,
+                          backgroundColor: const Color(0xFFF2D492),
                           foregroundColor: Colors.white,
                           icon: Icons.sports_esports,
                           label: 'Apostar',
@@ -1496,73 +1584,95 @@ Widget buildApuestas1xbetTab(BuildContext context) {
 }
 
 
-  Future<List<Partido>> obtenerPartidosLoL() async {
-  const url =
-      "https://esports-api.lolesports.com/persisted/gw/getSchedule?hl=es-MX";
-  final response = await http.get(
-    Uri.parse(url),
+  Future<List<Partido>> obtenerPartidosLoL({int page = 1, int perPage = 50}) async {
+  final uri = Uri.parse(
+    'https://api.pandascore.co/matches/upcoming?'
+    'game=league-of-legends&'
+    'per_page=$perPage&'
+    'page=$page&'
+    'sort=begin_at&'
+    'filter[future]=true',
+  );
+
+  final res = await http.get(
+    uri,
     headers: {
-      'x-api-key': '0TvQnueqKa5mxJntVWt0w4LpLfEkrV1Ta8rQBb9Z',
+      'Authorization': 'Bearer $PANDA_API_KEY',
+      'Accept': 'application/json',
     },
   );
 
-  if (response.statusCode == 200) {
-    final data = jsonDecode(response.body);
-    if (data['data'] == null || data['data']['schedule'] == null) return [];
-
-    final events = data['data']['schedule']['events'] as List;
-
-    List<Partido> partidos = [];
-
-    const baseUrl = 'https://esports-api.lolesports.com';
-
-    for (var evento in events) {
-      if (evento['match'] != null && evento['match']['teams'] != null) {
-        final teams = evento['match']['teams'] as List;
-        if (teams.length == 2) {
-          final team1 = teams[0];
-          final team2 = teams[1];
-
-          // Corregir ruta de logo si es relativa
-          String rutaLogo1 = team1['image'] ?? '';
-          String rutaLogo2 = team2['image'] ?? '';
-
-          String logo1 = rutaLogo1.startsWith('/')
-              ? baseUrl + rutaLogo1
-              : rutaLogo1;
-
-          String logo2 = rutaLogo2.startsWith('/')
-              ? baseUrl + rutaLogo2
-              : rutaLogo2;
-          
-            print('Logo equipo 1 URL: $logo1');
-            print('Logo equipo 2 URL: $logo2');
-
-
-          partidos.add(Partido(
-            hora: evento['startTime'] ?? "Sin hora",
-            equipo1: team1['code'] ?? "Desconocido",
-            equipo2: team2['code'] ?? "Desconocido",
-            torneo: evento['league']?['name'] ?? "",
-            formato: evento['blockName'] ?? "",
-            logoEquipo1: logo1,
-            logoEquipo2: logo2,
-            scoreEquipo1: team1['result']?['gameWins'],
-            scoreEquipo2: team2['result']?['gameWins'],
-            ganador: team1['result']?['outcome'] == "win"
-                ? team1['code']
-                : team2['result']?['outcome'] == "win"
-                    ? team2['code']
-                    : null,
-          ));
-        }
-      }
-    }
-
-    partidos.sort((a, b) => a.hora.compareTo(b.hora));
-    return partidos;
+  if (res.statusCode != 200) {
+    throw Exception('PandaScore LoL [${res.statusCode}]: ${res.body}');
   }
-  return [];
+
+  final List data = jsonDecode(res.body);
+
+  final partidos = <Partido>[];
+  
+  for (final m in data) {
+    try {
+      // Extraer equipos COMPATIBLE con tu modelo actual
+      final opponents = (m['opponents'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      
+      final teamA = opponents.isNotEmpty
+          ? (opponents[0]['opponent']?['name'] ?? 'TBD')
+          : 'TBD';
+
+      final teamB = opponents.length > 1
+          ? (opponents[1]['opponent']?['name'] ?? 'TBD')
+          : 'TBD';
+
+      final logoA = opponents.isNotEmpty
+          ? (opponents[0]['opponent']?['image_url'] ?? '')
+          : '';
+
+      final logoB = opponents.length > 1
+          ? (opponents[1]['opponent']?['image_url'] ?? '')
+          : '';
+
+      final beginAt = _parsearFecha(m['begin_at']);
+      
+      final serieName = m['serie']?['name'] ?? m['league']?['name'] ?? '';
+      final tournamentName = m['tournament']?['name'] ?? '';
+      final torneoCompleto = '$serieName ${tournamentName.isNotEmpty ? '- $tournamentName' : ''}'.trim();
+
+      partidos.add(Partido(
+        hora: beginAt,
+        equipo1: teamA,
+        equipo2: teamB,
+        torneo: torneoCompleto,
+        formato: _formatoPartido(m['number_of_games']),
+        logoEquipo1: logoA,
+        logoEquipo2: logoB,
+        scoreEquipo1: null,
+        scoreEquipo2: null,
+        ganador: null,
+      ));
+    } catch (e) {
+      print('⚠️ Partido inválido: ${m['id']} - $e');
+      continue;
+    }
+  }
+
+  return partidos;
+}
+
+// Helpers (sin clases nuevas)
+String _parsearFecha(dynamic fecha) {
+  if (fecha == null) return '';
+  try {
+    final dateTime = DateTime.parse(fecha.toString());
+    return '${dateTime.day.toString().padLeft(2, '0')}/${dateTime.month.toString().padLeft(2, '0')} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+  } catch (e) {
+    return fecha.toString();
+  }
+}
+
+String _formatoPartido(dynamic games) {
+  if (games == null) return 'Bo3';
+  final numGames = games.toString().replaceAll('.', '');
+  return numGames.isEmpty ? 'Bo3' : 'Bo$numGames';
 }
 
 
@@ -1739,6 +1849,7 @@ Widget buildApuestas1xbetTab(BuildContext context) {
     );
   }
   
+  
 @override
 Widget build(BuildContext context) {
   // Usuario actual de Firebase
@@ -1746,92 +1857,67 @@ Widget build(BuildContext context) {
 
   return Scaffold(
     appBar: AppBar(
-      backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      leading: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Image.asset(
-          'assets/icons/iconapp.png',
-          errorBuilder: (context, error, stackTrace) {
-            return const Icon(Icons.sports_esports, size: 32);
-          },
-        ),
-      ),
-      title: Text(
-        'Esports Syncs',
-        style: GoogleFonts.bebasNeue(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 2,
-        ),
-      ),
-      centerTitle: true,
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.account_circle),
-          tooltip: user?.email ?? 'Usuario',
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('Usuario'),
-                content: Text(user?.email ?? 'No autenticado'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Cerrar'),
-                  ),
-                  TextButton(
-                    onPressed: () async {
-                      await FirebaseAuth.instance.signOut();
-                      Navigator.pop(context);
-                    },
-                    child: const Text(
-                      'Cerrar Sesión',
-                      style: TextStyle(color: Colors.red),
-                    ),
-                  ),
+  title: const Text('Esports Sync'),
+  surfaceTintColor: Colors.transparent,
+  shadowColor: Colors.transparent,
+  elevation: 0,
+  backgroundColor: const Color(0xFF050608),
+  actions: [
+    Padding(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: PopupMenuButton<String>(
+        color: const Color(0xFF1A1A1A),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        icon: const Icon(Icons.account_circle, color: Color(0xFFF2D492)),
+        onSelected: _opcionUsuarioSeleccionada,
+        itemBuilder: (context) => [
+          PopupMenuItem(
+            value: 'perfil',
+            child: Row(
+              children: [
+                Icon(Icons.person, color: Colors.grey[400]),
+                const SizedBox(width: 12),
+                Text(_isInvitado ? '👋 Invitado' : 'Usuario'),
+              ],
+            ),
+          ),
+          if (_isInvitado) ...[
+            PopupMenuItem(
+              value: 'login',
+              child: Row(
+                children: [
+                  Icon(Icons.login, color: Colors.blue),
+                  const SizedBox(width: 12),
+                  const Text('Iniciar Sesión'),
                 ],
               ),
-            );
-          },
-        ),
-      ],
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(4),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: currentPage == 0 ? Colors.teal : Colors.grey[400],
-              ),
             ),
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: currentPage == 1 ? Colors.teal : Colors.grey[400],
-              ),
-            ),
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: currentPage == 2 ? Colors.teal : Colors.grey[400],
+            PopupMenuItem(
+              value: 'signup',  // ⭐️ NUEVA OPCIÓN
+              child: Row(
+                children: [
+                  Icon(Icons.person_add, color: Colors.green),
+                  const SizedBox(width: 12),
+                  const Text('Crear Cuenta'),
+                ],
               ),
             ),
           ],
-        ),
+          PopupMenuItem(
+            value: 'logout',
+            child: Row(
+              children: [
+                Icon(Icons.logout, color: Colors.red),
+                const SizedBox(width: 12),
+                const Text('Cerrar Sesión'),
+              ],
+            ),
+          ),
+        ],
       ),
     ),
+  ],
+),
 
     // CUERPO CON PAGEVIEW
     body: PageView(
@@ -1932,7 +2018,7 @@ Widget build(BuildContext context) {
                             opacity: card1FadeAnimation,
                             child: _buildGameCard(
                               context,
-                              color: Colors.cyan,
+                              color: const Color(0xFFF2D492),
                               title: "LOL ESPORTS",
                               imageAsset: "assets/icons/fondolol.jpg",
                               onTap: () => mostrarDialogoLoL(context),
@@ -2140,11 +2226,11 @@ Widget build(BuildContext context) {
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
                 fontStyle: FontStyle.italic,
-                color: Colors.white,
+                color: const Color.fromARGB(255, 255, 255, 255),
               ),
             ),
             IconButton(
-              icon: Icon(Icons.refresh, color: Colors.teal),
+              icon: Icon(Icons.refresh, color: const Color.fromARGB(255, 255, 255, 255)),
               onPressed: () {
                 setState(() {
                   noticiasDinamicas = obtenerNoticiasDinamicas(); // ← Refresh
@@ -2160,7 +2246,7 @@ Widget build(BuildContext context) {
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(
-                child: CircularProgressIndicator(color: Colors.teal),
+                child: CircularProgressIndicator(color: const Color(0xFFF2D492)),
               );
             }
             
@@ -2181,7 +2267,7 @@ Widget build(BuildContext context) {
             final noticias = snapshot.data!;
             return RefreshIndicator(
               onRefresh: () => noticiasDinamicas,
-              color: Colors.teal,
+              color: const Color(0xFFF2D492),
               child: ListView.builder(
                 padding: EdgeInsets.all(16),
                 itemCount: noticias.length,
@@ -2205,9 +2291,9 @@ Widget build(BuildContext context) {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.sports_esports, size: 50, color: Colors.teal),
+                                Icon(Icons.sports_esports, size: 50, color: const Color(0xFFF2D492)),
                                 SizedBox(height: 8),
-                                Text('🐑 Sheep Esports', style: TextStyle(color: Colors.teal[800])),
+                                Text('🐑 Sheep Esports', style: TextStyle(color: const Color.fromARGB(255, 0, 0, 0))),
                               ],
                             ),
                           ),
@@ -2247,7 +2333,7 @@ Widget build(BuildContext context) {
                                     ),
                                   ),
                                   const Icon(Icons.open_in_new,
-                                      size: 16, color: Colors.teal),
+                                      size: 16, color: Color(0xFFF2D492)),
                                 ],
                               ),
                               const SizedBox(height: 12),
@@ -2359,5 +2445,42 @@ Widget build(BuildContext context) {
         ),
       ),
     );
+  }
+
+  bool _isInvitado = false;  
+  Future<void> _verificarSesion() async {
+  final prefs = await SharedPreferences.getInstance();
+  setState(() {
+    isInvitado = prefs.getString('user_type') == 'invitado';  // ✅
+  });
+}
+
+  void _opcionUsuarioSeleccionada(String opcion) {
+  switch (opcion) {
+    case 'logout':
+      _cerrarSesion();
+      break;
+    case 'login':
+      Navigator.pushNamed(context, '/login');
+      break;
+    case 'signup':  // ⭐️ NUEVA OPCIÓN
+      Navigator.pushNamed(context, '/signup');
+      break;
+    case 'perfil':
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_isInvitado 
+            ? '👋 Modo invitado - Crea cuenta para favoritos' 
+            : '✅ Usuario registrado'),
+        ),
+      );
+      break;
+  }
+}
+
+  Future<void> _cerrarSesion() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    Navigator.pushReplacementNamed(context, '/login');
   }
 }
